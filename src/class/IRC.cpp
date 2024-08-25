@@ -25,7 +25,7 @@ void IRC::initSocketAdrr() {
 }
 
 void IRC::initSocket() {
-  int opt = 1; // ==> approondir aussi
+  int opt = 1;
   this->_fdSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (this->_fdSocket == -1)
     throw logic_error("Exception: Cannot create socket");
@@ -40,11 +40,10 @@ void IRC::initSocket() {
            sizeof(this->_addr)))
     throw logic_error("Exception: Cannot bind the server to the address");
   cout << GREEN "Success: Socket is bind to the address\n" RESET;
-
-  if (listen(this->_fdSocket, 3)) // approfondir la notion
+  fcntl(this->_fdSocket, F_SETFL, O_NONBLOCK);
+  if (listen(this->_fdSocket, 3))
     throw logic_error("Error: Cannot listen to the port");
   std::cout << GREEN "Success: Socket is listening\n" RESET;
-  fcntl(this->_fdSocket, F_SETFL, O_NONBLOCK);
 }
 
 int IRC::getSocket() { return this->_fdSocket; }

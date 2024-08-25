@@ -24,7 +24,7 @@ int main(void) {
   struct epoll_event ev_epoll;
   ev_epoll.events = EPOLLIN;
   ev_epoll.data.fd = server.getSocket();
-  struct epoll_event event[200];
+  struct epoll_event event[10];
 
   int fdEpoll = epoll_create(1);
   if (fdEpoll == -1) {
