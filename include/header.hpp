@@ -6,9 +6,12 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <fstream>
+#include <sstream>
 
 //C 
 #include <sys/socket.h> // socket, setsockopt, getsockname, bind, connect, listen, accept, send, recv
+#include <cstddef>
 #include <unistd.h>     // close, lseek select
 #include <netdb.h>      // getprotobyname, gethostbyname, getaddrinfo, freeaddrinfo
 #include <arpa/inet.h>  // htons, htonl, ntohs, ntohl, inet_addr, inet_ntoa
