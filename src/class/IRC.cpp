@@ -2,43 +2,43 @@
 
 IRC::IRC(const string &port, const string &password) {
 
-  if (port.size() < 3 && port.size() > 4)
-    throw logic_error("Exception: Port must be: 194 or [6665-6669] or 6697");
-  char *endstr;
-  double tmp = strtod(port.c_str(), &endstr);
-  if (*endstr != '\0')
-    throw logic_error("Exception: Port must be: 194 or [6665-6669] or 6697");
-  if (tmp != 194 && (tmp < 6665 && tmp > 6669) && tmp != 6697)
-    throw logic_error("Exception: Port must be: 194 or [6665-6669] or 6697");
-  this->_port = tmp;
-  this->_password = password;
-  this->initSocketAdrr();
-  this->initSocket();
+  try {
+    int tmp = stoi(port);
+    if (tmp != 194 && (tmp < 6665 && tmp > 6669) && tmp != 6697)
+      throw logic_error("Error: port must be: 194 or [6665-6669] or 6697");
+    this->_port = tmp;
+    this->_password = password;
+    this->initSocketAdrr();
+    this->initSocket();
+  } catch (const invalid_argument &e) {
+    cerr << "Error: invalid argument: " << e.what() << std::endl;
+  } catch (const out_of_range &e) {
+    cerr << "Error: out of range: " << e.what() << std::endl;
+  }
 }
 
 IRC::~IRC() { close(this->_fdSocket); }
 
 void IRC::initSocketAdrr() {
-  this->_addr.sin_family = AF_INET; // IPV4
+  this->_addr.sin_family = AF_INET;
   this->_addr.sin_port = htons(this->_port);
-  this->_addr.sin_addr.s_addr = htonl(0x7f000001); // 127.0.0.1 localhost
+  this->_addr.sin_addr.s_addr = htonl(0x7f000001);
 }
 
 void IRC::initSocket() {
-  int opt = 1;
   this->_fdSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (this->_fdSocket == -1)
-    throw logic_error("Exception: Cannot create socket");
+    throw logic_error("Error: Cannot create socket");
   cout << GREEN "Success: Socket is created\n" RESET;
 
-  if (setsockopt(this->_fdSocket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
-                 sizeof(opt)))
-    throw logic_error("Exception: Cannot bind the server to the address");
+  bool opt = true;
+  if (setsockopt(this->_fdSocket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+    throw logic_error("Error: Cannot bind the server to the address");
   cout << GREEN "Success: Socket is set\n" RESET;
 
   if (bind(this->_fdSocket, (struct sockaddr *)&this->_addr,
            sizeof(this->_addr)))
-    throw logic_error("Exception: Cannot bind the server to the address");
+    throw logic_error("Error: Cannot bind the server to the address");
   cout << GREEN "Success: Socket is bind to the address\n" RESET;
   fcntl(this->_fdSocket, F_SETFL, O_NONBLOCK);
   if (listen(this->_fdSocket, 3))
