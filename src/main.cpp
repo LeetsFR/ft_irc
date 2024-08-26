@@ -75,9 +75,17 @@ int main(void) {
             if (send(event[i].data.fd, msg_3.c_str(), msg_3.size(), 0) == -1)
               cerr << RED "Error: fail to send message" << endl;
           }
+          if (!strncmp(buffer, "PRIVMSG", 7)) 
+          {
+            const string msg_4 = ":sam PRIVMSG #samuel : wapwap\r\n";
+            if (send(event[i].data.fd, msg_4.c_str(), msg_4.size(), 0) == -1)
+              cerr << RED "Error: fail to send message" << endl;
+          }
           cout << "Received message from client: " << event[i].data.fd << endl;
           buffer[nb_read] = '\0';
-          cout << buffer << endl;
+          // cout << buffer << endl;
+          for (size_t i = 0; i < strlen(buffer); i++)
+              std::cout << (int)buffer[i] << "|" << buffer[i] << "\n";
         } else if (nb_read == 0) {
           cout << "Client disconnected: " << event[i].data.fd << "\n";
           close(event[i].data.fd);

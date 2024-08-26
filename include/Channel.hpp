@@ -12,7 +12,8 @@ public:
 private:
   // 1er caratere & ou # et jusqu'a 200 caracteres
   // pas de espaces, virugle ou '\a'
-  string _name;
+  const string _name;
+  const string _password;
   map<Client, bool> _connectClient;
 };
 

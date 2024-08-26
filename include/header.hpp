@@ -18,12 +18,19 @@
 #include <poll.h>       // poll
 #include <sys/epoll.h>  // epoll
 
+// CLASS
+// #include "Client.hpp"
+// #include "Channel.hpp"
+// #include "IRC.hpp"
+
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"
 #define RESET   "\033[0m"
 
 using namespace std;
 
+//  Utils
+std::vector<std::string> ft_split(std::string str, std::string delim);
 
 
 #endif

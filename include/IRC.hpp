@@ -15,11 +15,12 @@ public:
   void initSocket();
 
 private:
-  sockaddr_in _addr;
-  string _password;
-  int _port;
-  int _fdSocket;
-  vector<int> _tabClient;
+  sockaddr_in   _addr;
+  string        _password;
+  int           _port;
+  int           _fdSocket;
+  vector<int>   _tabClient;
+  // vector<Client*>   _tabClient2;
 };
 
 #endif
