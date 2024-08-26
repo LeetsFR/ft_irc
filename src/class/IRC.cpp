@@ -1,6 +1,6 @@
 #include "IRC.hpp"
 
-IRC::IRC(const string &port, const string &password) {
+IRC::IRC(const string &port, const string &password) : _name("Sunshine") {
 
   if (port.size() < 3 && port.size() > 4)
     throw logic_error("Exception: Port must be: 194 or [6665-6669] or 6697");
@@ -48,6 +48,8 @@ void IRC::initSocket() {
 }
 
 int IRC::getSocket() { return this->_fdSocket; }
+
+int IRC::getName() { return this->_name; }
 
 void IRC::addClient(int client) {
   // Parsing a faire
