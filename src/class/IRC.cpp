@@ -1,7 +1,7 @@
 #include "IRC.hpp"
+#include "Poll.hpp"
 
 IRC::IRC(const string &port, const string &password) {
-
   try {
     int tmp = stoi(port);
     if (tmp != 194 && (tmp < 6665 && tmp > 6669) && tmp != 6697)
@@ -15,9 +15,15 @@ IRC::IRC(const string &port, const string &password) {
   } catch (const out_of_range &e) {
     cerr << "Error: out of range: " << e.what() << std::endl;
   }
+  this->epoll = new Poll(this->_fdSocket);
 }
 
-IRC::~IRC() { close(this->_fdSocket); }
+IRC::~IRC() {
+  close(this->_fdSocket);
+  delete this->epoll;
+}
+
+void IRC::launchEpoll() { this->epoll->launchPoll(); }
 
 void IRC::initSocketAdrr() {
   this->_addr.sin_family = AF_INET;
@@ -31,8 +37,9 @@ void IRC::initSocket() {
     throw logic_error("Error: Cannot create socket");
   cout << GREEN "Success: Socket is created\n" RESET;
 
-  bool opt = true;
-  if (setsockopt(this->_fdSocket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+  int opt = 1;
+  if (setsockopt(this->_fdSocket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
+                 sizeof(opt)))
     throw logic_error("Error: Cannot bind the server to the address");
   cout << GREEN "Success: Socket is set\n" RESET;
 

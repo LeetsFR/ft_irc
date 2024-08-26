@@ -2,6 +2,7 @@
 #define __IRC__
 
 #include "header.hpp"
+#include "Poll.hpp"
 
 class IRC {
 
@@ -13,12 +14,14 @@ public:
   void addClient(int client);
   void initSocketAdrr();
   void initSocket();
+  void launchEpoll();
 
 private:
   sockaddr_in _addr;
   string _password;
   int _port;
   int _fdSocket;
+  Poll *epoll;
   vector<int> _tabClient;
 };
 
