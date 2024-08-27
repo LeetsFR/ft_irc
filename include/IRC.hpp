@@ -15,8 +15,9 @@ private:
   string _password;
   sockaddr_in _serverAdress;
 
-  bool portIsValid();
-  void initSocket();
+  bool _portIsValid();
+  void _initSocket();
+  void _acceptClient();
 };
 
 #endif
