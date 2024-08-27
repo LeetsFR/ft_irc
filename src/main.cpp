@@ -60,19 +60,19 @@ int main(void) {
         int nb_read = read(event[i].data.fd, buffer, sizeof(buffer));
         if (nb_read > 0) {
           if (!strncmp(buffer, "CAP LS", 6)) {
-            const string msg_1 = ":shining CAP * LS :multi-prefix\r\n";
-            if (send(event[i].data.fd, msg_1.c_str(), msg_1.size(), 0) == -1)
+            if (send(event[i].data.fd, REP_CAPLS(server.getName()).c_str(), REP_CAPLS(server.getName()).size(), 0) == -1)
               cerr << RED "Error: fail to send message" << endl;
           }
           if (!strncmp(buffer, "CAP REQ :multi-prefix", 21)) {
-            const string msg_2 = ":shining CAP * ACK :multi-prefix\r\n";
-            if (send(event[i].data.fd, msg_2.c_str(), msg_2.size(), 0) == -1)
+            if (send(event[i].data.fd, REP_CAPREQ(server.getName()).c_str(), REP_CAPREQ(server.getName()).size(), 0) == -1)
               cerr << RED "Error: fail to send message" << endl;
+            // send(event[i].data.fd, ERR_PASSWDMISMATCH(server.getName()).c_str(), ERR_PASSWDMISMATCH(server.getName()).size(), 0);
+            // close(event[i].data.fd);
+            // epoll_ctl(fdEpoll, EPOLL_CTL_DEL, event[i].data.fd, NULL);
+            
           }
           if (!strncmp(buffer, "CAP END", 7)) {
-            const string msg_3 = ":shining 001 dan :Welcome to the "
-                                 "Internet Relay Network dan\r\n";
-            if (send(event[i].data.fd, msg_3.c_str(), msg_3.size(), 0) == -1)
+            if (send(event[i].data.fd, REP_CAPEND(server.getName(), "bokit").c_str(), REP_CAPEND(server.getName(), "bokit").size(), 0) == -1)
               cerr << RED "Error: fail to send message" << endl;
           }
           if (!strncmp(buffer, "PRIVMSG", 7)) 
@@ -83,9 +83,9 @@ int main(void) {
           }
           cout << "Received message from client: " << event[i].data.fd << endl;
           buffer[nb_read] = '\0';
-          // cout << buffer << endl;
-          for (size_t i = 0; i < strlen(buffer); i++)
-              std::cout << (int)buffer[i] << "|" << buffer[i] << "\n";
+          cout << buffer << endl;
+          // for (size_t i = 0; i < strlen(buffer); i++)
+              // std::cout << (int)buffer[i] << "|" << buffer[i] << "\n";
         } else if (nb_read == 0) {
           cout << "Client disconnected: " << event[i].data.fd << "\n";
           close(event[i].data.fd);
@@ -98,3 +98,4 @@ int main(void) {
   close(fdEpoll);
   close(server.getSocket());
 }
+

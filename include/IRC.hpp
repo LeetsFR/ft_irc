@@ -9,11 +9,15 @@ public:
   IRC(const string &port, const string &password);
   ~IRC();
 
-  int getSocket();
-  int getName();
-  void addClient(int client);
-  void initSocketAdrr();
-  void initSocket();
+  std::string getName();
+  bool        checkPassword(std::string&);
+  int         getSocket();
+  bool        nicknameExist(std::string&); // a faire pour le moment renvoi true
+
+
+  void        addClient(int client);
+  void        initSocketAdrr();
+  void        initSocket();
 
 private:
   sockaddr_in   _addr;

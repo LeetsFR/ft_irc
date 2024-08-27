@@ -49,10 +49,22 @@ void IRC::initSocket() {
 
 int IRC::getSocket() { return this->_fdSocket; }
 
-int IRC::getName() { return this->_name; }
+std::string IRC::getName() { return this->_name; }
 
 void IRC::addClient(int client) {
   // Parsing a faire
   this->_tabClient.push_back(client);
   cout << "New client correctely added" << endl;
+}
+
+bool IRC::checkPassword(std::string& pass)
+{ 
+  return (pass == this->_password);
+}
+
+bool IRC::nicknameExist(std::string& nickname)
+{
+  (void)nickname;
+  // pour le moment renvoi true
+  return (true);
 }

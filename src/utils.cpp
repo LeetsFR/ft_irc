@@ -1,4 +1,5 @@
 #include <vector>
+#include <string>
 
 std::vector<std::string> ft_split(std::string str, std::string delim)
 {
