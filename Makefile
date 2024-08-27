@@ -11,7 +11,8 @@ SRC_DIR      := src
 OBJ_DIR      := obj
 
 CLASS_DIR    := $(SRC_DIR)/class
-SRCS         := $(SRC_DIR)/main.cpp $(CLASS_DIR)/IRC.cpp 
+LIB_DIR      := $(SRC_DIR)/lib
+SRCS         := $(SRC_DIR)/main.cpp $(CLASS_DIR)/IRC.cpp $(LIB_DIR)/libft.cpp
 
 INCLUDE      := include
 OBJS         := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)

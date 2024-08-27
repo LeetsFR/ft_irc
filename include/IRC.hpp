@@ -5,15 +5,18 @@
 
 class IRC {
 
-  public:
-    IRC(const string &port, const string &password);
-    ~IRC();
+public:
+  IRC(const string &port, const string &password);
+  ~IRC();
 
-  private:
-    int _fdsocket = 0;
-    int _port = 0;
-    string _password;
+private:
+  int _serverSocket = 0;
+  int _port = 0;
+  string _password;
+  sockaddr_in _serverAdress;
 
+  bool portIsValid();
+  void initSocket();
 };
 
 #endif
