@@ -4,6 +4,7 @@
 #include <cstring>
 #include <exception>
 #include <iostream>
+#include <sys/epoll.h>
 #include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
