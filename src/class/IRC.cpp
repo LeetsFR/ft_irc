@@ -23,22 +23,28 @@ bool IRC::_portIsValid() {
   if (_port == 6667)
     return true;
   return false;
-}
+}            
 
 void IRC::_acceptClient() {
+  int a = 0;
+  int clientSocket = 0;
   while (true) {
     int numberEvents = epoll_wait(_epollFd, _events, MAX_EVENT, -1);
     if (numberEvents == -1)
       throw logic_error("Error: Failed to accept the client socket");
-    for(int i = 0; i < numberEvents; ++i)
-    {
-      
-    int clientSocket = accept(_serverSocket, NULL, NULL); // On peut recup les infos client avec accept
-    if (clientSocket == -1)
-      throw logic_error("Error: Failed to accept the client socket");
-    char buffer[100];
-    recv(clientSocket, buffer, 100, 0);
-    cout << "Message send: " << buffer << endl;
+    cout << a++ << endl;
+    for (int i = 0; i < numberEvents; ++i) {
+      if (_events[i].data.fd == _serverSocket) {
+        clientSocket = accept(_serverSocket, NULL, NULL); // On peut recup les infos client avec accept
+        if (clientSocket == -1)
+          throw logic_error("Error: Failed to accept the client socket");
+        char buffer[100];
+        recv(clientSocket, buffer, 100, 0);
+        cout << "Message send: " << buffer << endl;
+      }
+      _event.events = EPOLLIN;
+      _event.data.fd = clientSocket;
+      epoll_ctl(_epollFd, EPOLL_CTL_ADD,clientSocket ,&_event );
     }
   }
 }
