@@ -48,53 +48,92 @@ void Client::changeNickname(std::string &nick)
 }
 
 // peut etre find sera mieux 
+
+/*
+pour les macro je peux directement les mettre dans la fonction send 
+mais pour plus de lisibilite je prefere le mettre dans une string
+*/
 void Client::configMessage(std::string &message, IRC& server)
 {
     this->_messageTmp = ft_split(message, "\r\n");
     if (!this->_messageTmp[0].compare("CAP LS"))
     {
-        const string msg_1 = ":shining CAP * LS :multi-prefix\r\n";
-        if (send(this->_socket, REP_CAPLS(server.getName()).c_str(), REP_CAPLS(server.getName()).size(), 0) == -1)
+        const string capLsMessage = REP_CAPLS(server.getName());
+        if (send(this->_socket, capLsMessage.c_str(), capLsMessage.size(), 0) == -1)
             cerr << RED "Error: fail to send message" << endl;
-        // configure les reste name...
-        // configure les 
         this->_messageTmp.erase(this->_messageTmp.begin());
+    }
 
-        if (this->_messageTmp[0].find("NICK"))
-                this->_nickname = this->_messageTmp[0].substr(6);
-        if (this->_messageTmp[1].find("PASS"))
+    if (this->_messageTmp[0].find("PASS", 0))
+    {
+        //TEST avec nc d'envoye "PASS" "PASS " "PASS 123" "PASS123"
+        std::string pass = this->_messageTmp[0].substr(6);
+        if (pass.size() == 0)
         {
-            std::string a = this->_messageTmp[1].substr(6);
-            this->_isValidate = server.checkPassword(a);
-            if (!this->_isValidate)
-                if (send(this->_socket, ERR_PASSWDMISMATCH(this->_nickname).c_str(), ERR_PASSWDMISMATCH(this->_nickname).size(), 0) == -1)
-                   cerr << RED "Error: fail to send message" << endl;
-        }
-        else
-        {
-            if (send(this->_socket, ERR_NEEDMOREPARAMS(this->getNickname(), "PASS").c_str(),ERR_NEEDMOREPARAMS(this->getNickname(), "PASS").size(), 0) == -1)
+            std::string needMore = ERR_NEEDMOREPARAMS(this->getNickname(), "PASS");
+            if (send(this->_socket, needMore.c_str(), needMore.size(), 0) == -1)
                 cerr << RED "Error: fail to send message" << endl;
         }
-        if (this->_messageTmp[2].find("USER"))
-            //  COMPLETER
-        return;
+        this->_isValidate = server.checkPassword(pass);
+        if (!this->_isValidate)
+        {
+            std::string wrongPassMessage = ERR_PASSWDMISMATCH(this->_nickname);
+            if (send(this->_socket, wrongPassMessage.c_str(), wrongPassMessage.size(), 0) == -1)
+               cerr << RED "Error: fail to send message" << endl;
+        }
+        this->_messageTmp.erase(this->_messageTmp.begin());
     }
+    if (this->_messageTmp[0].find("NICK"))
+    {
+        this->_nickname = this->_messageTmp[0].substr(6);
+        //  check le name avec les reste des name dans le server
+        //  check si les caracteres sont bon
+        //  il y a assez de paramettre donne
+        this->_messageTmp.erase(this->_messageTmp.begin());
+
+    }
+    if (this->_messageTmp[0].find("USER"))
+    {
+        std::vector<string> userParam = ft_split(this->_messageTmp[0], " ");
+        if (userParam.size() < 5)
+        {
+            // NEEDMOREPARAM
+        }
+
+        //  check si les caracteres sont bon
+        //  il y a assez de paramettre donne
+        this->_messageTmp.erase(this->_messageTmp.begin());
+    }
+
     if (!this->_messageTmp[0].compare("CAP REQ :multi-prefix"))
     {
-        // ":shining CAP * ACK :multi-prefix\r\n";
-        if (send(this->_socket, REP_CAPREQ(server.getName()).c_str(), REP_CAPREQ(server.getName()).size(), 0) == -1)
+        std::string capReqMessage = REP_CAPREQ(server.getName());
+        if (send(this->_socket, capReqMessage.c_str(), capReqMessage.size(), 0) == -1)
             cerr << RED "Error: fail to send message" << endl;
         this->_messageTmp.erase(this->_messageTmp.begin());
         return ;
     }
     if (!this->_messageTmp[0].compare("CAP END"))
     {
-        if (send(this->_socket, REP_CAPEND(server.getName(), this->_nickname).c_str(), REP_CAPEND(server.getName(), this->_nickname).size(), 0) == -1)
+        // cheker si tout les paramettres sont valdide
+        std::string capEndMessage = REP_CAPEND(server.getName(), this->_nickname);
+        if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
             cerr << RED "Error: fail to send message" << endl;
         this->_messageTmp.erase(this->_messageTmp.begin());
         this->_isConnected = true;
-        return ;
     }
+    if (this->_messageTmp.size())
+        cerr << RED "Error: to connect" << std::endl;
+    // s'il y reste des chose dans message tmp,
+    // cest que les message n'ont pas ete envoyer dans le bon ordre;
+    /*
+        CAP LS
+        PASS
+        NICK
+        USER
+        CAP REQ
+        CAP END
+    */
 }
 
 void    Client::receiveMessage(std::string& message, IRC& server)
@@ -104,25 +143,27 @@ void    Client::receiveMessage(std::string& message, IRC& server)
         string pingMessage = "PING " + server.getName() + "\r\n";
         if (message.compare(pingMessage))
         {
-            if (send(this->_socket, REP_PONG(server.getName()).c_str(), REP_PONG(server.getName()).size(), 0) == -1)
+            std::string pongMessage = REP_PONG(server.getName());
+            if (send(this->_socket, pongMessage.c_str(), pongMessage.size(), 0) == -1)
                 cerr << RED "Error: fail to send message" << endl;
         }
         else
         {
             if (message.compare("PING\r\n"))
-                if (send(this->_socket, ERR_NOORIGIN(server.getName(), this->_nickname).c_str(), ERR_NOORIGIN(server.getName(), this->_nickname).size(), 0) == -1)
+            {
+                std::string noOriginMessage = ERR_NOORIGIN(server.getName(), this->_nickname);
+                if (send(this->_socket, noOriginMessage.c_str(), noOriginMessage.size(), 0) == -1)
                     cerr << RED "Error: fail to send message" << endl;
+            }
             else
-                if (send(this->_socket, ERR_NEEDMOREPARAMS(server.getName(), this->_nickname).c_str(), ERR_NEEDMOREPARAMS(server.getName(), this->_nickname).size(), 0) == -1)
+            {
+                std::string needMoreMessage = ERR_NEEDMOREPARAMS(server.getName(), this->_nickname);
+                if (send(this->_socket, needMoreMessage.c_str(), needMoreMessage.size(), 0) == -1)
                     cerr << RED "Error: fail to send message" << endl;
+            }
 
 
         }   
-
-            
-
-    // p
-
     // reste des commande;
     }
 }

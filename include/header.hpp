@@ -33,12 +33,15 @@
 #define REP_CAPLS(serverName) (":" + serverName + " CAP * LS :multi-prefix\r\n")
 #define REP_CAPREQ(serverName) (":" + serverName + " CAP * ACK :multi-prefix\r\n")
 #define REP_CAPEND(serverName, clientName) (":" + serverName + " 001 " + clientName + " :Welcome to the Internet Relay Network " + clientName + "\r\n")
-#define REP_PONG(serverName) (":" + serverName)
+#define REP_PONG(serverName) (":PONG " + serverName)
 
 // MESSAGE: error message
-#define ERR_NEEDMOREPARAMS(clientName, command) ("PONG:" + clientName + " 461 " + command + " :Not enough parameters\r\n")
+#define ERR_NEEDMOREPARAMS(clientName, command) (":" + clientName + " 461 " + command + " :Not enough parameters\r\n")
 #define ERR_PASSWDMISMATCH(clientName) (":" + clientName + " 464 :Password incorrect password\r\n")
 #define ERR_NOORIGIN(serverName, clientName) (":" + serverName + " 409 " + clientName + " :No origin specified\r\n")
+
+#define ERR_NONICKNAMEGIVEN(clientName) (":" + clientName + " :No nickname given\r\n")
+#define ERR_ERRONEUSNICKNAME(clientName, nick) (":" + clientName + " 432 " + nick + " :Erroneus nickname\r\n")
 
 
 using namespace std;
