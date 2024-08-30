@@ -2,9 +2,9 @@
 #define __IRC__
 
 #include "libft.hpp"
-#include <sys/epoll.h>
 
 #define MAX_EVENT 10
+#define RECV_SIZE 1024
 
 class IRC {
 
@@ -26,6 +26,8 @@ private:
   void _initSocket();
   void _initEpoll();
   void _acceptClient();
+  void _addNewClient();
+  void _readNewMessage(int fd);
 };
 
 #endif

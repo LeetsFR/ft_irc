@@ -4,6 +4,7 @@
 #include <cstring>
 #include <exception>
 #include <iostream>
+#include <fcntl.h>
 #include <sys/epoll.h>
 #include <netinet/in.h>
 #include <string>

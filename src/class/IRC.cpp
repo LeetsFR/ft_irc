@@ -1,6 +1,8 @@
 #include "IRC.hpp"
+#include <fcntl.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <type_traits>
 
 IRC::IRC(const string &port, const string &password) {
 
@@ -23,28 +25,44 @@ bool IRC::_portIsValid() {
   if (_port == 6667)
     return true;
   return false;
-}            
+}
+
+void IRC::_addNewClient() {
+  int clientSocket = accept(_serverSocket, NULL, NULL);
+  if (clientSocket == -1)
+    throw logic_error("Error: Failed to accept the client socket");
+  if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) == -1)
+    throw logic_error(
+        "Error: Failed to set client socket to non-blocking mode");
+  _event.data.fd = clientSocket;
+  epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSocket, &_event);
+}
+
+void IRC::_readNewMessage(int fd) {
+  char buffer[RECV_SIZE];
+  int read_size = RECV_SIZE;
+  string message;
+  while (read_size == RECV_SIZE && message.find('\n')) {
+    read_size = recv(fd, buffer, RECV_SIZE, 0);
+    if (read_size == -1)
+      throw logic_error("Error: Failed to accept the client socket");
+    message.append(buffer, read_size);
+  }
+  cout << "Message send: " << message << endl;
+}
 
 void IRC::_acceptClient() {
   int a = 0;
-  int clientSocket = 0;
   while (true) {
     int numberEvents = epoll_wait(_epollFd, _events, MAX_EVENT, -1);
     if (numberEvents == -1)
       throw logic_error("Error: Failed to accept the client socket");
     cout << a++ << endl;
     for (int i = 0; i < numberEvents; ++i) {
-      if (_events[i].data.fd == _serverSocket) {
-        clientSocket = accept(_serverSocket, NULL, NULL); // On peut recup les infos client avec accept
-        if (clientSocket == -1)
-          throw logic_error("Error: Failed to accept the client socket");
-        char buffer[100];
-        recv(clientSocket, buffer, 100, 0);
-        cout << "Message send: " << buffer << endl;
-      }
-      _event.events = EPOLLIN;
-      _event.data.fd = clientSocket;
-      epoll_ctl(_epollFd, EPOLL_CTL_ADD,clientSocket ,&_event );
+      if (_events[i].data.fd == _serverSocket)
+        _addNewClient();
+      else
+        _readNewMessage(_events[i].data.fd);
     }
   }
 }
@@ -63,6 +81,9 @@ void IRC::_initSocket() {
   _serverSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (_serverSocket == -1)
     throw logic_error("Error: Failed to create server socket");
+  if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) == -1)
+    throw logic_error(
+        "Error: Failed to set server socket to non-blocking mode");
 
   _serverAdress.sin_family = AF_INET;
   _serverAdress.sin_port = htons(_port);
