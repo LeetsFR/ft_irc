@@ -1,23 +1,27 @@
 #include <vector>
 #include <string>
+#include <iostream>
 
-std::vector<std::string> ft_split(std::string str, std::string delim)
+
+std::vector<std::string> ft_split(const std::string& str, const std::string& delim)
 {
-    std::string tmp;
     std::vector<std::string> vec;
-    int posBegin = 0;
-    int posEnd = 0;
-    if (!delim.size())
-        return (vec);
+    size_t posBegin = 0;
+    size_t posEnd = 0;
+    if (str.empty() || delim.empty())
+        return vec;
     while(true)
     {
         posEnd = str.find(delim, posBegin);
+        // std::cout << "posBegin: " << posBegin << " posEnd: " << posEnd << " E-B" << posEnd - posBegin << std::endl;
+
         if (posEnd == std::string::npos)
             break;
-        tmp = str.substr(posBegin, posEnd - posBegin);
-        vec.push_back(tmp);
+        if (posBegin != posEnd)
+            vec.push_back(str.substr(posBegin, posEnd - posBegin));
         posBegin = posEnd + delim.size();
     }
-    vec.push_back(str.substr(posBegin));
+    if (posBegin < str.size())
+        vec.push_back(str.substr(posBegin, std::string::npos));
     return (vec);
 }

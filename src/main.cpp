@@ -1,6 +1,7 @@
+#include "header.hpp"
+#include "Client.hpp"
 #include "IRC.hpp"
-#include <atomic>
-#include <cstring>
+
 
 int setClient(int severSocket) {
   int clientSocket;
@@ -20,6 +21,10 @@ int setClient(int severSocket) {
 }
 
 int main(void) {
+  try
+  {
+    /* code */
+
   IRC server("6667", "42");
   struct epoll_event ev_epoll;
   ev_epoll.events = EPOLLIN;
@@ -46,49 +51,27 @@ int main(void) {
       if (event[i].data.fd == server.getSocket()) {
         clientSocket = setClient(server.getSocket());
         if (clientSocket != -1) {
-          server.addClient(clientSocket);
+
+          server.addClient((clientSocket));
           ev_epoll.data.fd = clientSocket;
           if (epoll_ctl(fdEpoll, EPOLL_CTL_ADD, clientSocket, &ev_epoll)) {
             cout << "epoll_ctl (add client)\n";
             return (1);
           }
         }
-      }
-
-      else {
+      } else {
         char buffer[1024];
         int nb_read = read(event[i].data.fd, buffer, sizeof(buffer));
+        Client *Isclient = server.findClient(event[i].data.fd);
         if (nb_read > 0) {
-          if (!strncmp(buffer, "CAP LS", 6)) {
-            if (send(event[i].data.fd, REP_CAPLS(server.getName()).c_str(), REP_CAPLS(server.getName()).size(), 0) == -1)
-              cerr << RED "Error: fail to send message" << endl;
-          }
-          if (!strncmp(buffer, "CAP REQ :multi-prefix", 21)) {
-            if (send(event[i].data.fd, REP_CAPREQ(server.getName()).c_str(), REP_CAPREQ(server.getName()).size(), 0) == -1)
-              cerr << RED "Error: fail to send message" << endl;
-            // send(event[i].data.fd, ERR_PASSWDMISMATCH(server.getName()).c_str(), ERR_PASSWDMISMATCH(server.getName()).size(), 0);
-            // close(event[i].data.fd);
-            // epoll_ctl(fdEpoll, EPOLL_CTL_DEL, event[i].data.fd, NULL);
-            
-          }
-          if (!strncmp(buffer, "CAP END", 7)) {
-            if (send(event[i].data.fd, REP_CAPEND(server.getName(), "bokit").c_str(), REP_CAPEND(server.getName(), "bokit").size(), 0) == -1)
-              cerr << RED "Error: fail to send message" << endl;
-          }
-          if (!strncmp(buffer, "PRIVMSG", 7)) 
-          {
-            const string msg_4 = ":sam PRIVMSG #samuel : wapwap\r\n";
-            if (send(event[i].data.fd, msg_4.c_str(), msg_4.size(), 0) == -1)
-              cerr << RED "Error: fail to send message" << endl;
-          }
-          cout << "Received message from client: " << event[i].data.fd << endl;
           buffer[nb_read] = '\0';
+          cout << "Received message from client: " << event[i].data.fd << endl;
+          cout << Isclient->getSocket() << endl; 
+          Isclient->handleMessage(buffer, server);
           cout << buffer << endl;
-          // for (size_t i = 0; i < strlen(buffer); i++)
-              // std::cout << (int)buffer[i] << "|" << buffer[i] << "\n";
         } else if (nb_read == 0) {
           cout << "Client disconnected: " << event[i].data.fd << "\n";
-          close(event[i].data.fd);
+          server.deleteClient(clientSocket);
           epoll_ctl(fdEpoll, EPOLL_CTL_DEL, event[i].data.fd, NULL);
         }
       }
@@ -97,5 +80,11 @@ int main(void) {
 
   close(fdEpoll);
   close(server.getSocket());
+    }
+  catch(const std::exception& e)
+  {
+    std::cerr << e.what() << '\n';
+  }
+  
 }
 

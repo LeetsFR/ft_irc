@@ -1,4 +1,5 @@
 #include "IRC.hpp"
+#include "Client.hpp"
 
 IRC::IRC(const string &port, const string &password) : _name("Sunshine") {
 
@@ -51,9 +52,11 @@ int IRC::getSocket() { return this->_fdSocket; }
 
 std::string IRC::getName() { return this->_name; }
 
-void IRC::addClient(int client) {
-  // Parsing a faire
-  this->_tabClient.push_back(client);
+void IRC::addClient(int clientSocket) {
+  Client* newClient = new Client(clientSocket);
+  cout << newClient << endl;
+  this->_listClient.push_back(newClient);
+  cout << this->_listClient[0] << endl;
   cout << "New client correctely added" << endl;
 }
 
@@ -67,4 +70,37 @@ bool IRC::nicknameExist(std::string& nickname)
   (void)nickname;
   // pour le moment renvoi true
   return (true);
+}
+
+//tester avec les iterator pour voir si cest plus rapide
+Client* IRC::findClient(int clientSocket)
+{
+    for (size_t i = 0; i < this->_listClient.size(); i++)
+    {
+      if ( this->_listClient[i]->getSocket() == clientSocket)
+        return (this->_listClient[i]);
+    }
+    throw logic_error("Exception: tu codes comme une merde");
+    return (NULL);
+}
+
+void IRC::deleteClient(int clientSocket)
+{
+    size_t i = 0;
+    size_t nbClient = this->_listClient.size();    
+    for (; i < nbClient; i++)
+    {
+        if (this->_listClient[i]->getSocket() == clientSocket)
+        {
+            cout << this->_listClient[0] << endl;
+            cout << i << endl;
+            delete this->_listClient[i];
+            this->_listClient.erase(this->_listClient.begin() + i);
+            close(clientSocket);
+
+            exit (1);
+            return;
+        }
+    }
+    throw logic_error("Exception: tu codes comme une merde");
 }

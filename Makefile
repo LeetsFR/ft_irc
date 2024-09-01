@@ -11,12 +11,12 @@ SRC_DIR      := src
 OBJ_DIR      := obj
 
 CLASS_DIR    := $(SRC_DIR)/class
-SRCS         := $(SRC_DIR)/main.cpp $(CLASS_DIR)/IRC.cpp
+SRCS         := $(SRC_DIR)/main.cpp $(SRC_DIR)/utils.cpp $(CLASS_DIR)/IRC.cpp $(CLASS_DIR)/Client.cpp
 
 INCLUDE      := include
 OBJS         := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-CFLAGS       := -Wall -Wextra -Werror -g3 
+CFLAGS       := -Wall -Wextra -Werror -g3 -std=c++98
 CCFLAGS      := -I $(INCLUDE)
 CC           = c++
 
