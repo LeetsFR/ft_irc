@@ -13,9 +13,9 @@ public:
   ~IRC();
 
 private:
-  int _serverSocket = 0;
-  int _port = 0;
-  int _epollFd = 0;
+  int _serverSocket;
+  int _port;
+  int _epollFd;
   string _password;
   sockaddr_in _serverAdress;
   epoll_event _event;

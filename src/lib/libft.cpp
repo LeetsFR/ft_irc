@@ -1,13 +1,13 @@
 #include "libft.hpp"
+#include <cerrno>
+#include <stdexcept>
 
 int convertIntSafe(string n) {
-  int safe = 0;
-  try {
-    safe = stoi(n);
-  } catch (const invalid_argument &ex) {
-    cerr << "Error: invalid argument: " << ex.what() << endl;
-  } catch (const out_of_range &ex) {
-    cerr << "Error: out of range argument: " << ex.what() << endl;
-  }
+  char *endPtr;
+  long safe = strtol(n.c_str(), &endPtr, 10);
+  if (*endPtr != '\0' && *endPtr != '\n')
+    throw logic_error("Error: invalid argument");
+  if (errno == ERANGE)
+    throw logic_error("Error: out of range argument");
   return safe;
 }

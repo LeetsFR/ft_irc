@@ -1,11 +1,9 @@
 #include "IRC.hpp"
-#include <fcntl.h>
+
+#include <stdexcept>
 #include <sys/epoll.h>
-#include <sys/socket.h>
-#include <type_traits>
 
 IRC::IRC(const string &port, const string &password) {
-
   _password = password;
   _port = convertIntSafe(port);
   if (_portIsValid() == false)
@@ -32,8 +30,7 @@ void IRC::_addNewClient() {
   if (clientSocket == -1)
     throw logic_error("Error: Failed to accept the client socket");
   if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) == -1)
-    throw logic_error(
-        "Error: Failed to set client socket to non-blocking mode");
+    throw logic_error("Error: Failed to set client socket to non-blocking mode");
   _event.data.fd = clientSocket;
   epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSocket, &_event);
 }
@@ -48,7 +45,18 @@ void IRC::_readNewMessage(int fd) {
       throw logic_error("Error: Failed to accept the client socket");
     message.append(buffer, read_size);
   }
-  cout << "Message send: " << message << endl;
+  if (read_size == 0) {
+    epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, &_event);
+  }
+  if (message.find("CAP LS") != std::string::npos) {
+    // Envoie des capacités supportées au client
+    cout << "S: CAP * LS :multi-prefix extended-join" << std::endl;
+  } else if (message.find("JOIN") != std::string::npos) {
+    // Logique pour gérer les commandes de join de canal
+    cout << "S: 001 Welcome to the IRC server!" << std::endl;
+  }
+  else
+    cout << "Message send: " << message << endl;
 }
 
 void IRC::_acceptClient() {
@@ -82,20 +90,17 @@ void IRC::_initSocket() {
   if (_serverSocket == -1)
     throw logic_error("Error: Failed to create server socket");
   if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) == -1)
-    throw logic_error(
-        "Error: Failed to set server socket to non-blocking mode");
+    throw logic_error("Error: Failed to set server socket to non-blocking mode");
 
   _serverAdress.sin_family = AF_INET;
   _serverAdress.sin_port = htons(_port);
   _serverAdress.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
-  if (bind(_serverSocket, (struct sockaddr *)&_serverAdress,
-           sizeof(_serverAdress)) == -1)
+  int opt = 1;
+  if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1)
+    throw logic_error("Error: Failed to setsockopt the server socket");
+  if (bind(_serverSocket, (struct sockaddr *)&_serverAdress, sizeof(_serverAdress)) == -1)
     throw logic_error("Error: Failed to bind the server socket");
   if (listen(_serverSocket, 5) == -1)
     throw logic_error("Error: Failed to listen the server socket");
-  int opt = 1;
-  if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) ==
-      -1)
-    throw logic_error("Error: Failed to setsockopt the server socket");
 }

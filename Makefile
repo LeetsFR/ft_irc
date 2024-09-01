@@ -17,7 +17,7 @@ SRCS         := $(SRC_DIR)/main.cpp $(CLASS_DIR)/IRC.cpp $(LIB_DIR)/libft.cpp
 INCLUDE      := include
 OBJS         := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-CFLAGS       := -Wall -Wextra -Werror -g3 
+CFLAGS       := -Wall -Wextra -Werror -std=c++98
 CCFLAGS      := -I $(INCLUDE)
 CC           = c++
 
@@ -28,7 +28,8 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	@$(CC) $(OBJS) -o $(NAME)
-	@echo "$(COLOR_GREEN)$(COLOR_BOLD)Compilation finie 👍$(COLOR_RESET)"
+	@echo -e "$(COLOR_GREEN)$(COLOR_BOLD)Compilation réussie avec succès ! 🎉$(COLOR_RESET)"
+
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDE)/*
 	@$(DIR_DUP)
@@ -39,7 +40,7 @@ clean:
 
 fclean: clean
 	@$(RM) $(OBJ_DIR) $(NAME)
-	@echo "$(COLOR_RED)$(COLOR_BOLD)files deleted$(COLOR_RESET)"
+	@echo -e "$(COLOR_RED)$(COLOR_BOLD)Tous les fichiers générés ont été supprimés avec succès. 🗑️$(COLOR_RESET)"
 
 re: fclean all
 
