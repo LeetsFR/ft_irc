@@ -47,15 +47,11 @@ void IRC::_readNewMessage(int fd) {
   }
   if (read_size == 0) {
     epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, &_event);
-  }
-  if (message.find("CAP LS") != std::string::npos) {
-    // Envoie des capacités supportées au client
-    cout << "S: CAP * LS :multi-prefix extended-join" << std::endl;
-  } else if (message.find("JOIN") != std::string::npos) {
-    // Logique pour gérer les commandes de join de canal
-    cout << "S: 001 Welcome to the IRC server!" << std::endl;
-  }
-  else
+    return;
+
+  } else if (message.find("CAP LS 302")) {
+    cout << "CAP * LS :cap-notify" << endl;
+  } else
     cout << "Message send: " << message << endl;
 }
 
