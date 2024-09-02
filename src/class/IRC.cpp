@@ -84,6 +84,7 @@ Client* IRC::findClient(int clientSocket)
     return (NULL);
 }
 
+//proteger les fonctions
 void IRC::deleteClient(int clientSocket)
 {
     size_t i = 0;
@@ -97,10 +98,22 @@ void IRC::deleteClient(int clientSocket)
             delete this->_listClient[i];
             this->_listClient.erase(this->_listClient.begin() + i);
             close(clientSocket);
-
-            exit (1);
-            return;
         }
+    }
+    throw logic_error("Exception: tu codes comme une merde");
+}
+
+void IRC::deleteAll()
+{
+    size_t i = 0;
+    size_t nbClient = this->_listClient.size();    
+    for (; i < nbClient; i++)
+    {
+      cout << this->_listClient[0] << endl;
+      cout << i << endl;
+      close(this->_listClient[0]->getSocket());
+      delete this->_listClient[i];
+      this->_listClient.erase(this->_listClient.begin() + i);
     }
     throw logic_error("Exception: tu codes comme une merde");
 }

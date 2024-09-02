@@ -2,6 +2,7 @@
 #include "Client.hpp"
 #include "IRC.hpp"
 
+bool g_stop = false;
 
 int setClient(int severSocket) {
   int clientSocket;
@@ -21,70 +22,69 @@ int setClient(int severSocket) {
 }
 
 int main(void) {
-  try
-  {
-    /* code */
+    handler_signal();
+    try
+    {
+        IRC server("6667", "42");
+        struct epoll_event ev_epoll;
+        ev_epoll.events = EPOLLIN;
+        ev_epoll.data.fd = server.getSocket();
+        struct epoll_event event[200];
 
-  IRC server("6667", "42");
-  struct epoll_event ev_epoll;
-  ev_epoll.events = EPOLLIN;
-  ev_epoll.data.fd = server.getSocket();
-  struct epoll_event event[200];
-
-  int fdEpoll = epoll_create(1);
-  if (fdEpoll == -1) {
-    cerr << RED "epoll_create()" << endl;
-    return 0;
-  }
-  if (epoll_ctl(fdEpoll, EPOLL_CTL_ADD, server.getSocket(), &ev_epoll)) {
-    cerr << RED "epoll_ctl()" << endl;
-    return 0;
-  }
-  while (true) {
-    int nfds = epoll_wait(fdEpoll, event, 10, -1);
-    if (nfds == -1) {
-      cerr << RED "epoll_create()" << endl;
-      return 1;
-    }
-    int clientSocket;
-    for (int i = 0; i < nfds; ++i) {
-      if (event[i].data.fd == server.getSocket()) {
-        clientSocket = setClient(server.getSocket());
-        if (clientSocket != -1) {
-
-          server.addClient((clientSocket));
-          ev_epoll.data.fd = clientSocket;
-          if (epoll_ctl(fdEpoll, EPOLL_CTL_ADD, clientSocket, &ev_epoll)) {
-            cout << "epoll_ctl (add client)\n";
-            return (1);
-          }
+        int fdEpoll = epoll_create(1);
+        if (fdEpoll == -1) {
+            cerr << RED "epoll_create()" RESET << endl;
+            return 0;
         }
-      } else {
-        char buffer[1024];
-        int nb_read = read(event[i].data.fd, buffer, sizeof(buffer));
-        Client *Isclient = server.findClient(event[i].data.fd);
-        if (nb_read > 0) {
-          buffer[nb_read] = '\0';
-          cout << "Received message from client: " << event[i].data.fd << endl;
-          cout << Isclient->getSocket() << endl; 
-          Isclient->handleMessage(buffer, server);
-          cout << buffer << endl;
-        } else if (nb_read == 0) {
-          cout << "Client disconnected: " << event[i].data.fd << "\n";
-          server.deleteClient(clientSocket);
-          epoll_ctl(fdEpoll, EPOLL_CTL_DEL, event[i].data.fd, NULL);
+        if (epoll_ctl(fdEpoll, EPOLL_CTL_ADD, server.getSocket(), &ev_epoll)) {
+            cerr << RED "epoll_ctl()" RESET << endl;
+            return 0;
         }
-      }
+        while (!g_stop) {
+            int nfds = epoll_wait(fdEpoll, event, 10, -1);
+            if (nfds == -1) {
+            cerr << RED "epoll_wait()" RESET << endl;
+            return 1;
+            }
+            int clientSocket;
+            for (int i = 0; i < nfds; ++i) {
+            if (event[i].data.fd == server.getSocket()) {
+                clientSocket = setClient(server.getSocket());
+                if (clientSocket != -1) {
+                cout << clientSocket << endl;
+                server.addClient((clientSocket));
+                ev_epoll.data.fd = clientSocket;
+                if (epoll_ctl(fdEpoll, EPOLL_CTL_ADD, clientSocket, &ev_epoll)) {
+                    cout << "epoll_ctl (add client)\n";
+                    return (1);
+                }
+                }
+            } else {
+                char buffer[1024];
+                int nb_read = read(event[i].data.fd, buffer, sizeof(buffer));
+                Client *Isclient = server.findClient(event[i].data.fd);
+                if (nb_read > 0) {
+                buffer[nb_read] = '\0';
+                cout << "Received message from client: " << event[i].data.fd << endl;
+                cout << Isclient->getSocket() << endl; 
+                Isclient->handleMessage(buffer, server);
+                cout << buffer << endl;
+                } else if (nb_read == 0) {
+                cout << "Client disconnected: " << event[i].data.fd << "\n";
+                server.deleteClient(clientSocket);
+                epoll_ctl(fdEpoll, EPOLL_CTL_DEL, event[i].data.fd, NULL);
+                }
+            }
+            }
+        }
+        cout << "C signal active " << g_stop << endl;
+        close(fdEpoll);
+        close(server.getSocket());
     }
-  }
-
-  close(fdEpoll);
-  close(server.getSocket());
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
     }
-  catch(const std::exception& e)
-  {
-    std::cerr << e.what() << '\n';
-  }
-  
+    
 }
 

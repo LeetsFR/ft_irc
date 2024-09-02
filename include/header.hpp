@@ -43,5 +43,9 @@ std::vector<std::string> ft_split(const std::string&, const std::string&);
 
 using namespace std;
 
+// signals
+extern bool g_stop;
+void handler_signal();
+
 
 #endif

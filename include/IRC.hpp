@@ -18,6 +18,7 @@ class IRC {
 
     // void        addClient(int client);
     void        deleteClient(int clientSocket);
+    void        deleteAll();
     Client*     findClient(int clientSocket);
     void        addClient(int);
     void        initSocketAdrr();
