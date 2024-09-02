@@ -1,7 +1,15 @@
 #include "libft.hpp"
-#include <cerrno>
-#include <stdexcept>
 
+string printTime() {
+  time_t rawtime;
+  struct tm *timeinfo;
+  char buffer[80];
+
+  time(&rawtime);
+  timeinfo = localtime(&rawtime);
+  strftime(buffer, 80, "[%X] ", timeinfo);
+  return string(buffer);
+}
 int convertIntSafe(string n) {
   char *endPtr;
   long safe = strtol(n.c_str(), &endPtr, 10);

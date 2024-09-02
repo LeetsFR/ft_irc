@@ -1,8 +1,5 @@
 #include "IRC.hpp"
 
-#include <stdexcept>
-#include <sys/epoll.h>
-
 IRC::IRC(const string &port, const string &password) {
   _password = password;
   _port = convertIntSafe(port);
@@ -39,20 +36,26 @@ void IRC::_readNewMessage(int fd) {
   char buffer[RECV_SIZE];
   int read_size = RECV_SIZE;
   string message;
-  while (read_size == RECV_SIZE && message.find('\n')) {
+  while (read_size == RECV_SIZE && message.find('\n') == string::npos) {
     read_size = recv(fd, buffer, RECV_SIZE, 0);
     if (read_size == -1)
-      throw logic_error("Error: Failed to accept the client socket");
+      throw logic_error("Error: Failed to recv the client socket");
     message.append(buffer, read_size);
   }
   if (read_size == 0) {
     epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, &_event);
+    close(fd);
     return;
+  }
+  if (message.find("CAP LS") != string::npos) {
+    string a(":server 001 mcollas :Welcome to the Internet Relay Network mcollas\r\n");
+    send(fd, a.c_str(), a.length(), MSG_NOSIGNAL);
+  } else if (message.find("PING") != string::npos) {
+    string pong_response = "PONG :server\r\n";
+    send(fd, pong_response.c_str(), pong_response.length(), MSG_NOSIGNAL);
+  }
 
-  } else if (message.find("CAP LS 302")) {
-    cout << "CAP * LS :cap-notify" << endl;
-  } else
-    cout << "Message send: " << message << endl;
+  cout << printTime() << message << endl;
 }
 
 void IRC::_acceptClient() {
