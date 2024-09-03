@@ -6,7 +6,7 @@
 /*   By: scely <scely@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/30 19:49:17 by scely             #+#    #+#             */
-/*   Updated: 2024/09/02 20:53:10 by scely            ###   ########.fr       */
+/*   Updated: 2024/09/03 16:12:32 by scely            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,32 +45,31 @@ void Client::configMessage(std::string& message, IRC& server)
     while (nbMessage--) // a tester avec 0
     {
         std::string currentMessage = this->_messageTmp[0];
-        if (!currentMessage.compare(0, 6, "CAP LS"))
+        if (!currentMessage.compare(0, 4, "PASS"))
         {
-            const string capLsMessage = REP_CAPLS(server.getName());
-            if (send(this->_socket, capLsMessage.c_str(), capLsMessage.size(), 0) == -1)
-                cerr << RED "Error: fail to send message" RESET << endl;
-
-        }
-        else if (!currentMessage.compare(0, 4, "PASS"))
-        {
+            cout << "\n***********PASS***********\n";
             //TEST avec nc d'envoye "PASS" "PASS " "PASS 123" "PASS123"
-            std::string tmp = currentMessage.substr(6);
+            std::string tmp = currentMessage.substr(5);
             if (tmp.size() == 0)
             {
                 std::string needMore = ERR_NEEDMOREPARAMS(this->getNickname(), "PASS");
                 if (send(this->_socket, needMore.c_str(), needMore.size(), 0) == -1)
                     cerr << RED "Error: fail to send message" RESET << endl;
+                break;
             }
             this->_isValidate = server.checkPassword(tmp);
-            if (this->_isValidate)
+            cout << tmp << "\n";
+            cout << this->_isValidate << "\n";
+
+            if (this->_isValidate == false)
             {
                 std::string wrongPassMessage = ERR_PASSWDMISMATCH(this->_nickname);
                 if (send(this->_socket, wrongPassMessage.c_str(), wrongPassMessage.size(), 0) == -1)
-                cerr << RED "Error: fail to send message" RESET << endl;
+                    cerr << RED "Error: fail to send message" RESET << endl;
+                break;
             }
         }        
-        else if (!currentMessage.find("NICK", 0))
+        else if (!currentMessage.compare(0, 4, "NICK"))
         {
                               
             this->_nickname = currentMessage.substr(5);
@@ -80,9 +79,8 @@ void Client::configMessage(std::string& message, IRC& server)
             // this->_messageTmp.erase(this->_messageTmp.begin());
 
         }
-        else if (!currentMessage.find("USER"))
-        {
-                              
+        else if (!currentMessage.compare(0, 4, "USER"))
+        {               
             std::vector<string> userParam = ft_split(currentMessage, " ");
             if (userParam.size() < 5)
             {
@@ -93,27 +91,16 @@ void Client::configMessage(std::string& message, IRC& server)
             //  il y a assez de paramettre donne
             // this->_messageTmp.erase(this->_messageTmp.begin());
         }
-        else if (!currentMessage.compare("CAP REQ :multi-prefix"))
-        {
-            std::string capReqMessage = REP_CAPREQ(server.getName());
-            if (send(this->_socket, capReqMessage.c_str(), capReqMessage.size(), 0) == -1)
-                cerr << RED "Error: fail to send message" RESET << endl;
-            // this->_messageTmp.erase(this->_messageTmp.begin());
-
-
-        }
-        else if (!currentMessage.compare("CAP END"))
-        {
-                              
-            // cheker si tout les paramettres sont valdide
-            std::string capEndMessage = REP_CAPEND( this->_nickname);
-            if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
-                cerr << RED "Error: fail to send message" RESET << endl;
-            // this->_messageTmp.erase(this->_messageTmp.begin());
-            this->_isConnected = true;
-            this->_isValidate = true;
-        }
         this->_messageTmp.erase(this->_messageTmp.begin());
+    }
+    if (this->_isValidate)
+    {                          
+        // cheker si tout les paramettres sont valdide
+        std::string capEndMessage = REP_CAPEND( this->_nickname);
+        if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
+            cerr << RED "Error: fail to send message" RESET << endl;
+        this->_isConnected = true;
+        this->_isValidate = true;
     }
 }
 

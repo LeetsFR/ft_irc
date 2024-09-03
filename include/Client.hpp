@@ -29,7 +29,7 @@ class Client {
 
         bool            _isValidate;
         bool            _isConnected;
-        bool            _badConfig;
+        // bool            _badConfig;
 
         vector<string>  _messageTmp;
 };

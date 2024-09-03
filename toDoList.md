@@ -12,9 +12,9 @@
 
 ## IRC
 - Gestion des erreurs
-    - [ ] 🔴 Leaks
-    - [ ] 🔴 Quitter proprement le programme : Leaks, FDs...
+    - [x] 🔴 Leaks
+    - [x] 🔴 Quitter proprement le programme : Leaks, FDs...
 
 ## MAIN
 - Gestion des erreurs
-    - [ ] 🔴 Signaux : ctrl + C ?; ctrl + \ ?
+    - [x] 🔴 Signaux : ctrl + C ?; ctrl + \ ?

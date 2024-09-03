@@ -44,7 +44,6 @@ int main(void) {
             int nfds = epoll_wait(fdEpoll, event, 10, -1);
             if (nfds == -1) {
             cerr << RED "epoll_wait()" RESET << endl;
-            return 1;
             }
             int clientSocket;
             for (int i = 0; i < nfds; ++i) {
@@ -77,7 +76,7 @@ int main(void) {
             }
             }
         }
-        cout << "C signal active " << g_stop << endl;
+        server.deleteAll();
         close(fdEpoll);
         close(server.getSocket());
     }

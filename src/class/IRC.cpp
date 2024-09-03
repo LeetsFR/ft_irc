@@ -93,14 +93,14 @@ void IRC::deleteClient(int clientSocket)
     {
         if (this->_listClient[i]->getSocket() == clientSocket)
         {
-            cout << this->_listClient[0] << endl;
+            cout << this->_listClient[i] << endl;
             cout << i << endl;
             delete this->_listClient[i];
             this->_listClient.erase(this->_listClient.begin() + i);
             close(clientSocket);
         }
     }
-    throw logic_error("Exception: tu codes comme une merde");
+    cout << "Client "<< clientSocket << " has been removed\n";
 }
 
 void IRC::deleteAll()
@@ -109,11 +109,11 @@ void IRC::deleteAll()
     size_t nbClient = this->_listClient.size();    
     for (; i < nbClient; i++)
     {
-      cout << this->_listClient[0] << endl;
+      cout << this->_listClient[i] << endl;
       cout << i << endl;
-      close(this->_listClient[0]->getSocket());
+      close(this->_listClient[i]->getSocket());
       delete this->_listClient[i];
       this->_listClient.erase(this->_listClient.begin() + i);
     }
-    throw logic_error("Exception: tu codes comme une merde");
+    cout << "All client has been removed\n";
 }
