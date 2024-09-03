@@ -1,10 +1,9 @@
 #ifndef __IRC__
 #define __IRC__
 
-#include "libft.hpp"
+#include "libirc.hpp"
 
 #define MAX_EVENT 10
-#define RECV_SIZE 1024
 
 class IRC {
 
@@ -21,13 +20,12 @@ private:
   epoll_event _event;
   epoll_event _events[MAX_EVENT];
 
-
-  bool _portIsValid();
   void _initSocket();
   void _initEpoll();
-  void _acceptClient();
+  void _initSignal();
+  void _waitEvent();
   void _addNewClient();
-  void _readNewMessage(int fd);
+  void _getEventClient(int fd);
 };
 
 #endif
