@@ -14,13 +14,17 @@ class Client {
         ~Client();
 
         void        handleMessage(std::string, IRC& server);
-        void        configMessage(std::string&, IRC& server);
-        void        receiveMessage(std::string&, IRC& server);
         int         getSocket();
         std::string getNickname();
+        std::string getUniqId();
         void        changeNickname(std::string&);
 
     private:
+        void        configMessage(std::string&, IRC& server);
+        void        receiveMessage(std::string&, IRC& server);
+        bool        correctNickFormat(std::string&);
+
+
         int          _socket;
         string       _nickname; // uniaue et fait 9 carateres
         const string _hostname; // le nom de la machine hote
@@ -29,7 +33,7 @@ class Client {
 
         bool            _isValidate;
         bool            _isConnected;
-        // bool            _badConfig;
+        bool            _badConfig;
 
         vector<string>  _messageTmp;
 };

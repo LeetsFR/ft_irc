@@ -6,7 +6,7 @@
 /*   By: scely <scely@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/02 20:56:24 by scely             #+#    #+#             */
-/*   Updated: 2024/09/02 21:20:04 by scely            ###   ########.fr       */
+/*   Updated: 2024/09/03 22:02:40 by scely            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ void	signal_c(int signal_code)
 {
 	g_stop = true;
 	(void)signal_code;
+	cout << "\r";
 }
 
 void handler_signal()

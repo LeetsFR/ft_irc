@@ -64,8 +64,7 @@ int main(void) {
                 Client *Isclient = server.findClient(event[i].data.fd);
                 if (nb_read > 0) {
                 buffer[nb_read] = '\0';
-                cout << "Received message from client: " << event[i].data.fd << endl;
-                cout << Isclient->getSocket() << endl; 
+                cout << "Received message from client: " << event[i].data.fd << " " << Isclient->getSocket() << endl;
                 Isclient->handleMessage(buffer, server);
                 cout << buffer << endl;
                 } else if (nb_read == 0) {
