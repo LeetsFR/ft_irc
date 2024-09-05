@@ -1,6 +1,11 @@
 #include "IRC.hpp"
 #include "Client.hpp"
 
+/**************************************************************************************/
+/*                              Constructeur et destructeur                           */
+/**************************************************************************************/
+
+
 IRC::IRC(const string &port, const string &password) : _name("Sunshine") 
 {
     if (port.size() < 3 && port.size() > 4)
@@ -17,15 +22,44 @@ IRC::IRC(const string &port, const string &password) : _name("Sunshine")
     this->initSocket();
 }
 
-IRC::~IRC() { close(this->_fdSocket); }
+IRC::~IRC()
+{
+    size_t nbClient = this->_listClient.size();        
+    for (size_t i = 0; i < nbClient; i++)
+        delete this->_listClient[i];
+    this->_listClient.erase(this->_listClient.begin(), this->_listClient.end());
+    cout << "All client has been remove\n";
+    
+    close(this->_fdSocket); 
+}
 
-void IRC::initSocketAdrr() {
+/**************************************************************************************/
+/*                                      Methodes                                      */
+/**************************************************************************************/
+
+int IRC::getSocket()
+{
+    return this->_fdSocket;
+}
+
+std::string IRC::getName()
+{
+    return this->_name;
+}
+
+bool IRC::checkPassword(std::string& pass)
+{
+    return (pass == this->_password);
+}
+void IRC::initSocketAdrr()
+{
     this->_addr.sin_family = AF_INET; // IPV4
     this->_addr.sin_port = htons(this->_port);
     this->_addr.sin_addr.s_addr = htonl(0x7f000001); // 127.0.0.1 localhost
 }
 
-void IRC::initSocket() {
+void IRC::initSocket()
+{
     int opt = 1; // ==> approondir aussi
     this->_fdSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (this->_fdSocket == -1)
@@ -46,9 +80,6 @@ void IRC::initSocket() {
     fcntl(this->_fdSocket, F_SETFL, O_NONBLOCK);
 }
 
-int IRC::getSocket() { return this->_fdSocket; }
-
-std::string IRC::getName() { return this->_name; }
 
 void IRC::addClient(int clientSocket)
 {
@@ -57,10 +88,6 @@ void IRC::addClient(int clientSocket)
     cout << "New client correctely added" << endl;
 }
 
-bool IRC::checkPassword(std::string& pass)
-{
-    return (pass == this->_password);
-}
 
 bool IRC::nicknameExist(std::string& nickname)
 {
@@ -85,7 +112,6 @@ Client* IRC::findClient(int clientSocket)
     return (NULL);
 }
 
-//proteger les fonctions
 void IRC::deleteClient(int clientSocket)
 {
     size_t nbClient = this->_listClient.size();        
@@ -95,7 +121,6 @@ void IRC::deleteClient(int clientSocket)
         {
             delete this->_listClient[i];
             this->_listClient.erase(this->_listClient.begin() + i);
-            close(clientSocket);
             cout << "Client "<< clientSocket << " has been removed\n";
             return ;
         }
@@ -103,14 +128,3 @@ void IRC::deleteClient(int clientSocket)
     cerr << RED "Cannot remove the socket\n" RESET;
 }
 
-void IRC::deleteAll()
-{
-    size_t nbClient = this->_listClient.size();        
-    for (size_t i = 0; i < nbClient; i++)
-    {
-        close(this->_listClient[i]->getSocket());
-        delete this->_listClient[i];
-        this->_listClient.erase(this->_listClient.begin() + i);
-    }
-    cout << "All client has been remove\n";
-}

@@ -38,8 +38,8 @@
 
 
 #define ERR_NONICKNAMEGIVEN(clientName) (std::string(":") + clientName + " 431 :No nickname given\r\n")
-#define ERR_ERRONEUSNICKNAME(clientName, nick) (std::string(":") + clientName + " 432 " + nick + " :Erroneous nickname\r\n")
 #define ERR_NICKNAMEINUSE(clientName, nick) (std::string(":") + clientName + " 433 " + nick + " :Nickname is already in use\r\n")
+#define ERR_ERRONEUSNICKNAME(clientName, nick) (std::string(":") + clientName + " 432 " + nick + " :Erroneous nickname\r\n")
 
 //  Utils
 std::vector<std::string> ft_split(const std::string&, const std::string&);

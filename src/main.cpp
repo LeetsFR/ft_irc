@@ -13,8 +13,8 @@ int setClient(int severSocket) {
   if (clientSocket != -1) {
     char ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(clientAddress.sin_addr), ip, INET_ADDRSTRLEN);
-    cout << GREEN "Success: Connection from " << clientAddress.sin_zero << endl;
-    cout << ip << ":" << ntohs(clientAddress.sin_port) << RESET << "\n";
+    cout << GREEN "Success: Connection from " << clientAddress.sin_zero << RESET << "\n";
+    cout << GREEN << ip << ":" << ntohs(clientAddress.sin_port) << RESET << "\n";
     int opt = 1;
     setsockopt(clientSocket, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof(opt));
   }
@@ -75,9 +75,7 @@ int main(void) {
             }
             }
         }
-        server.deleteAll();
         close(fdEpoll);
-        close(server.getSocket());
     }
     catch(const std::exception& e)
     {

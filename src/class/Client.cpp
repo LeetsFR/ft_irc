@@ -6,12 +6,16 @@
 /*   By: scely <scely@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/30 19:49:17 by scely             #+#    #+#             */
-/*   Updated: 2024/09/04 22:24:14 by scely            ###   ########.fr       */
+/*   Updated: 2024/09/05 16:04:02 by scely            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "IRC.hpp"
 #include "Client.hpp"
+
+/**************************************************************************************/
+/*                              Constructeur et destructeur                           */
+/**************************************************************************************/
 
 Client::Client(int socket) : _socket(socket)
 {
@@ -20,25 +24,39 @@ Client::Client(int socket) : _socket(socket)
     this->_isValidate = false;
 } 
 
-Client::~Client() {}
-
-int Client::getSocket() {return (this->_socket);}
-std::string Client::getNickname() {return (this->_nickname);}
-std::string Client::getUniqId() {return (this->_uniqId);}
-
-void Client::changeNickname(std::string &nick)
+Client::~Client() 
 {
-    if (nick.size() > 9)
-    {
-        //send a error
-        return ;
-    }
-    this->_nickname = nick;
+    close(this->_socket); 
 }
+
+/**************************************************************************************/
+/*                              Surcharge d'operateur                                 */
+/**************************************************************************************/
+
+
+/**************************************************************************************/
+/*                                      Methodes                                      */
+/**************************************************************************************/
+
+int Client::getSocket() 
+{
+    return (this->_socket);
+}
+
+std::string Client::getNickname() 
+{
+    return (this->_nickname);
+}
+
+std::string Client::getUniqId()
+{
+    return (this->_uniqId);
+}
+
 
 void Client::handleMessage(std::string message, IRC& server)
 {
-    if (this->_isValidate == false && this->_isConnected == false)
+    if ( this->_isConnected == false)
         this->configMessage(message, server);
     this->receiveMessage(message, server);
 }
@@ -111,12 +129,12 @@ void Client::configMessage(std::string& message, IRC& server)
         else 
         {
             const_cast<std::string&>(this->_uniqId) = tmp;
-            this->_nickname = tmp;
+            this->_nickname = tmp.substr(0, 9);
         }
         this->_messageTmp.erase(this->_messageTmp.begin());
         currentMessage = this->_messageTmp[0];
     }
-        
+
     if (this->_badConfig == false && this->_nickname.size() && !currentMessage.compare(0, 4, "USER"))
     {            
         cout << "\n***********USER***********\n";   
@@ -128,7 +146,6 @@ void Client::configMessage(std::string& message, IRC& server)
         }
         this->_messageTmp.erase(this->_messageTmp.begin());
     }
-
 
     /*================================================================*/
     if (this->_badConfig == false)
@@ -190,4 +207,14 @@ bool    Client::correctNickFormat(std::string& nick)
             return (false);
     }
     return (true);
+}
+
+void Client::changeNickname(std::string &nick)
+{
+    if (nick.size() > 9)
+    {
+        //send a error
+        return ;
+    }
+    this->_nickname = nick;
 }

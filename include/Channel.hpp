@@ -14,7 +14,8 @@ private:
   // pas de espaces, virugle ou '\a'
   const string _name;
   const string _password;
-  map<Client, bool> _connectClient;
+  map<Client*, bool> _connectClient;
+  map<Client*, bool> _connectClient;
 };
 
 #endif

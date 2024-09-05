@@ -25,7 +25,7 @@ class Client {
         bool        correctNickFormat(std::string&);
 
 
-        int          _socket;
+        const int          _socket;
         string       _nickname; // uniaue et fait 9 carateres
         const string _hostname; // le nom de la machine hote
         const string _username; // le nom du user sur la mahcine hote
