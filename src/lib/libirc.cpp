@@ -1,6 +1,5 @@
 #include "libirc.hpp"
-
-bool quit = false;
+#include "IRC.hpp"
 
 bool portIsValid(int port) {
   if (port == 6667)
@@ -8,7 +7,29 @@ bool portIsValid(int port) {
   return false;
 }
 
-void handleSigint(int sig) { quit = sig; }
+vector<string> ft_split(const string &str, const string &delim) {
+  vector<string> vec;
+  size_t posBegin = 0;
+  size_t posEnd = 0;
+  if (str.empty() || delim.empty())
+    return vec;
+  while (true) {
+    posEnd = str.find(delim, posBegin);
+    if (posEnd == string::npos)
+      break;
+    if (posBegin != posEnd)
+      vec.push_back(str.substr(posBegin, posEnd - posBegin));
+    posBegin = posEnd + delim.size();
+  }
+  if (posBegin < str.size())
+    vec.push_back(str.substr(posBegin, string::npos));
+  return (vec);
+}
+
+void handleSigint(int sig) {
+  run = false;
+  (void)sig;
+}
 
 bool getMessage(int fd, string &message) {
   char buffer[RECV_SIZE];
@@ -28,11 +49,11 @@ bool getMessage(int fd, string &message) {
 string printTime() {
   time_t rawtime;
   struct tm *timeinfo;
-  char buffer[80];
+  char buffer[sizeof("[00:00:00] ")];
 
   time(&rawtime);
   timeinfo = localtime(&rawtime);
-  strftime(buffer, 80, "[%X] ", timeinfo);
+  strftime(buffer, sizeof("[00:00:00] "), "[%X] ", timeinfo);
   return string(buffer);
 }
 

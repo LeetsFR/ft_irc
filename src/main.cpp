@@ -1,10 +1,10 @@
 #include "IRC.hpp"
-#include <stdexcept>
+#include "libirc.hpp"
 
 int main() {
   try {
     IRC server("6667", "42");
   } catch (logic_error &le) {
-    cout << le.what() << endl;
+    cout << printTime() << RED << le.what() << RESET << endl;
   }
 }
