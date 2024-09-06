@@ -13,6 +13,7 @@
 #include <iostream>
 #include <iterator>
 #include <locale>
+#include <map>
 #include <netinet/in.h>
 #include <string>
 #include <sys/epoll.h>
@@ -28,16 +29,22 @@
 
 #define REP_CAPLS(serverName) (string(":") + serverName + " CAP * LS :multi-prefix\r\n")
 #define REP_CAPREQ(serverName) (string(":") + serverName + " CAP * ACK :multi-prefix\r\n")
-#define REP_CAPEND(clientName) (string(":") + clientName + " 001 " + clientName + " :Welcome to the Internet Relay Network " + clientName + ", my bros\r\n")
+#define REP_CAPEND(clientName)                                                                     \
+  (string(":") + clientName + " 001 " + clientName + " :Welcome to the Internet Relay Network " +  \
+   clientName + ", my bros\r\n")
 #define REP_PONG(serverName) (string("PONG ") + serverName + "\r\n")
 
-#define ERR_NEEDMOREPARAMS(clientName, command) (string(":") + clientName + " 461 " + command + " :Not enough parameters\r\n")
+#define ERR_NEEDMOREPARAMS(clientName, command)                                                    \
+  (string(":") + clientName + " 461 " + command + " :Not enough parameters\r\n")
 #define ERR_PASSWDMISMATCH(clientName) (string(":") + clientName + " 464 :Password incorrect\r\n")
-#define ERR_NOORIGIN(serverName, clientName) (string(":") + serverName + " 409 " + clientName + " :No origin specified\r\n")
+#define ERR_NOORIGIN(serverName, clientName)                                                       \
+  (string(":") + serverName + " 409 " + clientName + " :No origin specified\r\n")
 
 #define ERR_NONICKNAMEGIVEN(clientName) (string(":") + clientName + " 431 :No nickname given\r\n")
-#define ERR_NICKNAMEINUSE(clientName, nick) (string(":") + clientName + " 433 " + nick + " :Nickname is already in use\r\n")
-#define ERR_ERRONEUSNICKNAME(clientName, nick) (string(":") + clientName + " 432 " + nick + " :Erroneous nickname\r\n")
+#define ERR_NICKNAMEINUSE(clientName, nick)                                                        \
+  (string(":") + clientName + " 433 " + nick + " :Nickname is already in use\r\n")
+#define ERR_ERRONEUSNICKNAME(clientName, nick)                                                     \
+  (string(":") + clientName + " 432 " + nick + " :Erroneous nickname\r\n")
 
 using namespace std;
 

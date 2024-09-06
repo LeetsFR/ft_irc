@@ -1,6 +1,5 @@
 #include "IRC.hpp"
 #include "Client.hpp"
-#include <vector>
 
 bool run = false;
 

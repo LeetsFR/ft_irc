@@ -7,6 +7,8 @@
 
 class Client;
 
+class Channel;
+
 class IRC {
 
 public:
@@ -20,7 +22,6 @@ public:
   Client &findClient(int fd);
   void removeClient(int fd);
 
-
 private:
   string _name;
   int _serverSocket;
@@ -31,6 +32,7 @@ private:
   epoll_event _event;
   epoll_event _events[MAX_EVENT];
   vector<Client> _listClient;
+  vector<Channel> _listChannel;
 
   void _initSocket();
   void _initEpoll();
