@@ -18,6 +18,8 @@ public:
   bool checkPassword(const string &);
   bool findNickname(const string &);
   Client &findClient(int fd);
+  void removeClient(int fd);
+
 
 private:
   string _name;
@@ -35,7 +37,6 @@ private:
   void _initSignal();
   void _waitEvent();
   void _addNewClient();
-  void _removeClient(int fd);
   void _getEventClient(int fd);
 };
 

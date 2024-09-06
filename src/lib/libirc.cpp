@@ -29,6 +29,7 @@ vector<string> ft_split(const string &str, const string &delim) {
 void handleSigint(int sig) {
   run = false;
   (void)sig;
+  cout << "\r";
 }
 
 bool getMessage(int fd, string &message) {

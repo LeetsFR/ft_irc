@@ -6,7 +6,7 @@
 /*   By: scely <scely@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/30 19:49:17 by scely             #+#    #+#             */
-/*   Updated: 2024/09/05 16:04:02 by scely            ###   ########.fr       */
+/*   Updated: 2024/09/06 13:34:30 by scely            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,28 +112,30 @@ void Client::configMessage(std::string &message, IRC &server) {
     currentMessage = this->_messageTmp[0];
   }
 
-  if (this->_badConfig == false && this->_nickname.size() && !currentMessage.compare(0, 4, "USER")) {
+ if (this->_badConfig == false && this->_nickname.size() && !currentMessage.compare(0, 4, "USER")) {
     cout << "\n***********USER***********\n";
     std::vector<string> userParam = ft_split(currentMessage, " ");
     if (userParam.size() < 5) {
       // NEEDMOREPARAM
       this->_badConfig = true;
     }
+    this->_username = "en attente de parsing";
     this->_messageTmp.erase(this->_messageTmp.begin());
   }
 
   /*================================================================*/
-  if (this->_badConfig == false) {
-    // cheker si tout les paramettres sont valdide
-    // METTRE UN MESSAGE SPECIFIQUE SI LE PASS N'EST PAS SET
+  if (this->_isValidate == false || this->_badConfig == true) {
+    std::string capEndMessage = "You cannot connect to the server\n";
+    if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+  }
+  else if (!this->_nickname.size() || !this->_username.size())
+    return ;
+  else {
     std::string capEndMessage = REP_CAPEND(this->_nickname);
     if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
       cerr << RED "Error: fail to send message" RESET << endl;
     this->_isConnected = true;
-  } else {
-    std::string capEndMessage = "You cannot connect to the server\n";
-    if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
-      cerr << RED "Error: fail to send message" RESET << endl;
   }
 }
 

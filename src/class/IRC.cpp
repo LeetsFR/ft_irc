@@ -39,7 +39,8 @@ bool IRC::findNickname(const string &nickname) {
     if (it->getNickname() == nickname)
       return true;
   }
-  throw logic_error("Error: Nickname not found");
+  // throw logic_error("Error: Nickname not found");
+  return (false);
 }
 
 Client &IRC::findClient(int fd) {
@@ -71,7 +72,7 @@ void IRC::_addNewClient() {
   cout << printTime() << "(IP: " << ip << " - PORT: " << ntohs(clientAddress.sin_port) << ") Client connected" << endl;
 }
 
-void IRC::_removeClient(int fd) {
+void IRC::removeClient(int fd) {
   epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, &_event);
   vector<Client>::iterator it;
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
@@ -89,9 +90,10 @@ void IRC::_getEventClient(int fd) {
   string message;
 
   if (getMessage(fd, message) == false) {
-    _removeClient(fd);
+    removeClient(fd);
     return;
   }
+  cout <<"message: "<< message << endl;
   Client &client = findClient(fd);
   client.handleMessage(message, *this);
 }

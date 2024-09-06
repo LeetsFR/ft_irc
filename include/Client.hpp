@@ -27,6 +27,7 @@ private:
   void receiveMessage(string &, IRC &server);
   bool correctNickFormat(string &);
 
+  static IRC& serv;
   int _socket;
   string _nickname;
   string _hostname;
