@@ -1,4 +1,5 @@
 #include "IRC.hpp"
+#include "Channel.hpp"
 #include "Client.hpp"
 
 bool run = false;
@@ -52,10 +53,31 @@ Client &IRC::findClient(int fd) {
   throw logic_error("Error: Client not found");
 }
 
+Client &IRC::findClient(const string &clientName) {
+  vector<Client>::iterator it;
+
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->getNickname() == clientName)
+      return *it;
+  }
+  throw logic_error("Error: Client not found");
+}
+
+Channel &IRC::findChannel(const string &channelName) {
+  vector<Channel>::iterator it;
+
+  for (it = _listChannel.begin(); it != _listChannel.end(); ++it) {
+    if (it->getName() == channelName)
+      return *it;
+  }
+  throw logic_error("Error: Channel not found");
+}
+
 void IRC::_addNewClient() {
   sockaddr_in clientAddress;
   int addrlen = sizeof(clientAddress);
-  int clientSocket = accept(_serverSocket, (struct sockaddr *)&clientAddress, (socklen_t *)&addrlen);
+  int clientSocket =
+      accept(_serverSocket, (struct sockaddr *)&clientAddress, (socklen_t *)&addrlen);
   if (clientSocket == -1)
     throw logic_error("Error: Failed to accept the client socket");
 
@@ -68,7 +90,8 @@ void IRC::_addNewClient() {
   _event.data.fd = clientSocket;
   epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSocket, &_event);
   _listClient.push_back(Client(clientSocket, clientAddress, ip));
-  cout << printTime() << "(IP: " << ip << " - PORT: " << ntohs(clientAddress.sin_port) << ") Client connected" << endl;
+  cout << printTime() << "(IP: " << ip << " - PORT: " << ntohs(clientAddress.sin_port)
+       << ") Client connected" << endl;
 }
 
 void IRC::removeClient(int fd) {
@@ -77,7 +100,8 @@ void IRC::removeClient(int fd) {
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
     if (it->getSocket() == fd) {
       _listClient.erase(it);
-      cout << printTime() << "(IP: " << it->getIp() << " - PORT: " << it->getPort() << ") Client disconnected" << endl;
+      cout << printTime() << "(IP: " << it->getIp() << " - PORT: " << it->getPort()
+           << ") Client disconnected" << endl;
       close(fd);
       return;
     }
@@ -92,7 +116,7 @@ void IRC::_getEventClient(int fd) {
     removeClient(fd);
     return;
   }
-  cout <<"message: "<< message << endl;
+  cout << "message: " << message << endl;
   Client &client = findClient(fd);
   client.handleMessage(message, *this);
 }

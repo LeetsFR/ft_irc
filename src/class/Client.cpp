@@ -17,7 +17,8 @@
 /*                              Constructeur et destructeur                           */
 /**************************************************************************************/
 
-Client::Client(int socket, sockaddr_in clientAdress, string ip) : _socket(socket), _clientAdress(clientAdress), _ip(ip) {
+Client::Client(int socket, sockaddr_in clientAdress, string ip)
+    : _socket(socket), _clientAdress(clientAdress), _ip(ip) {
   this->_badConfig = false;
   this->_isConnected = false;
   this->_isValidate = false;
@@ -31,19 +32,21 @@ Client::~Client() {
 /*                              Surcharge d'operateur                                 */
 /**************************************************************************************/
 
+bool Client::operator==(const Client &client) const { return (_uniqId == client.getUniqId()); }
+
 /**************************************************************************************/
 /*                                      Methodes                                      */
 /**************************************************************************************/
 
-int Client::getSocket() { return (this->_socket); }
+int Client::getSocket() const { return (this->_socket); }
 
 const string &Client::getIp() const { return (this->_ip); }
 
 uint16_t Client::getPort() const { return ntohs(_clientAdress.sin_port); }
 
-std::string Client::getNickname() { return (this->_nickname); }
+const string &Client::getNickname() const { return (this->_nickname); }
 
-std::string Client::getUniqId() { return (this->_uniqId); }
+const string &Client::getUniqId() const { return (this->_uniqId); }
 
 void Client::handleMessage(std::string message, IRC &server) {
   if (this->_isConnected == false)
@@ -81,7 +84,8 @@ void Client::configMessage(std::string &message, IRC &server) {
     currentMessage = this->_messageTmp[0];
   }
 
-  if (this->_badConfig == false && !currentMessage.compare(0, 4, "NICK") && this->_nickname.size() == 0) {
+  if (this->_badConfig == false && !currentMessage.compare(0, 4, "NICK") &&
+      this->_nickname.size() == 0) {
     cout << "\n***********NICK***********\n";
     std::string tmp;
     if (currentMessage.find(' ', 4) != std::string::npos)
@@ -112,7 +116,8 @@ void Client::configMessage(std::string &message, IRC &server) {
     currentMessage = this->_messageTmp[0];
   }
 
- if (this->_badConfig == false && this->_nickname.size() && !currentMessage.compare(0, 4, "USER")) {
+  if (this->_badConfig == false && this->_nickname.size() &&
+      !currentMessage.compare(0, 4, "USER")) {
     cout << "\n***********USER***********\n";
     std::vector<string> userParam = ft_split(currentMessage, " ");
     if (userParam.size() < 5) {
@@ -128,15 +133,14 @@ void Client::configMessage(std::string &message, IRC &server) {
     std::string capEndMessage = "You cannot connect to the server\n";
     if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
       cerr << RED "Error: fail to send message" RESET << endl;
-  }
-  else if (!this->_nickname.size() || !this->_username.size())
-    return ;
+  } else if (!this->_nickname.size() || !this->_username.size())
+    return;
   else {
   }
-    std::string capEndMessage = REP_CAPEND(this->_nickname);
-    if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
-      cerr << RED "Error: fail to send message" RESET << endl;
-    this->_isConnected = true;
+  std::string capEndMessage = REP_CAPEND(this->_nickname);
+  if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
+    cerr << RED "Error: fail to send message" RESET << endl;
+  this->_isConnected = true;
 }
 
 void Client::receiveMessage(std::string &message, IRC &server) {
@@ -167,7 +171,8 @@ bool Client::correctNickFormat(std::string &nick) {
     return (false);
 
   for (size_t i = 0; i < nickSize; i++) {
-    if (!(std::isalnum(nick[i]) || (nick[i] >= '[' && nick[i] <= ']') || (nick[i] >= '{' && nick[i] <= '}')))
+    if (!(std::isalnum(nick[i]) || (nick[i] >= '[' && nick[i] <= ']') ||
+          (nick[i] >= '{' && nick[i] <= '}')))
       return (false);
   }
   return (true);

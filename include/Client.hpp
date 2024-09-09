@@ -14,20 +14,22 @@ public:
   Client(int, sockaddr_in, string);
   ~Client();
 
-  void handleMessage(string, IRC &server);
-  int getSocket();
+  int getSocket() const;
   const string &getIp() const;
   uint16_t getPort() const;
-  string getNickname();
-  string getUniqId();
+  const string &getNickname() const;
+  const string &getUniqId() const;
   void changeNickname(string &);
+  void handleMessage(string, IRC &server);
+
+  bool operator==(const Client &) const;
 
 private:
   void configMessage(string &, IRC &server);
   void receiveMessage(string &, IRC &server);
   bool correctNickFormat(string &);
 
-  static IRC& serv;
+  static IRC &serv;
   int _socket;
   string _nickname;
   string _hostname;

@@ -34,14 +34,18 @@ void handleSigint(int sig) {
   cout << "\r";
 }
 
-vector<string> kickParsing(string &message) {
-  vector<string> kick;
+bool kickParsing(string &message, string &channelName, string &kickUserName, string &reason) {
+
   int pos = message.find(' ');
-  kick.push_back(string(message, 0, pos));
   int pos2 = message.find(pos + 1, ' ');
-  kick.push_back(string(message, pos + 1, pos2));
-  kick.push_back(string(message, pos2 + 1, string::npos));
-  return kick;
+
+  channelName = string(message, 0, pos);
+  kickUserName = string(message, pos + 1, pos2);
+  reason = string(message, pos2 + 1, string::npos);
+  cout << "Channel = " << channelName << endl;
+  cout << "kickusername = " << kickUserName << endl;
+  cout << "reason = " << reason << endl;
+  return true;
 }
 bool getMessage(int fd, string &message) {
   char buffer[RECV_SIZE];

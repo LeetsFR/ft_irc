@@ -27,7 +27,8 @@ public:
   bool checkPassword(const string &);
   bool findNickname(const string &);
   Client &findClient(int fd);
-  Channel &findChannel(string &name);
+  Client &findClient(const string &);
+  Channel &findChannel(const string &name);
   void removeClient(int fd);
 
 private:

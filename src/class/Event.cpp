@@ -1,15 +1,18 @@
 #include "Event.hpp"
-#include "Client.hpp"
 #include "Channel.hpp"
+#include "Client.hpp"
+#include "libirc.hpp"
 
 Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(serv) {
 
   switch (type) {
   case PING:
+    _managePING(client);
     break;
   case PRIVMSG:
     break;
   case KICK:
+    _manageKICK(message, client);
     break;
   }
 }
@@ -21,10 +24,14 @@ void Event::_managePING(Client &client) {
 }
 
 void Event::_manageKICK(string &message, Client &client) {
-  vector<string> content = kickParsing(message);
-  string channelName, kickUser, reason;
-  channelName = content.begin();
-  kickUser = channelName + 1;
-  reason = channelName + 2;
-  Channel channel = _serv.findChannel(channelName);
+  string channelName, kickUserName, reason;
+  kickParsing(message, channelName, kickUserName, reason);
+  Channel &channel = _serv.findChannel(channelName);
+  if (channel.clientIsOperator(client) == false) {
+    cerr << printTime() << RED "Error: client is not operator he can't KICK" RESET << endl;
+    return;
+  }
+  Client &kickUser = _serv.findClient(kickUserName);
+  channel.kickClient(kickUser);
+  channel.sendMessage(message);
 }

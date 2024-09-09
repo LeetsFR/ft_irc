@@ -7,17 +7,19 @@ class Client;
 
 class Channel {
 
-  public:
-    Channel(const string& name);
-    ~Channel();
+public:
+  Channel(string &name);
+  ~Channel();
 
-    void joinChannel();
-    void sendMessage();
+  const string &getName() const;
+  void joinChannel();
+  void sendMessage(const string &);
+  bool clientIsOperator(Client &);
+  void kickClient(Client &);
 
-  private:
-    string& _name;
-    map<Client,bool> _listClient;
-      
+private:
+  string &_name;
+  map<Client, bool> _listClient;
 };
 
 #endif
