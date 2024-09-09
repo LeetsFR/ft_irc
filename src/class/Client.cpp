@@ -132,11 +132,11 @@ void Client::configMessage(std::string &message, IRC &server) {
   else if (!this->_nickname.size() || !this->_username.size())
     return ;
   else {
+  }
     std::string capEndMessage = REP_CAPEND(this->_nickname);
     if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
       cerr << RED "Error: fail to send message" RESET << endl;
     this->_isConnected = true;
-  }
 }
 
 void Client::receiveMessage(std::string &message, IRC &server) {

@@ -54,5 +54,6 @@ bool portIsValid(int port);
 int convertIntSafe(const string &n);
 string printTime();
 vector<string> ft_split(const string &, const string &);
+vector<string> kickParsing(string& message);
 
 #endif

@@ -5,6 +5,13 @@
 
 #define MAX_EVENT 200
 
+typedef enum {
+  KICK,
+  PRIVMSG,
+  PING
+
+} typeMsg;
+
 class Client;
 
 class Channel;
@@ -20,6 +27,7 @@ public:
   bool checkPassword(const string &);
   bool findNickname(const string &);
   Client &findClient(int fd);
+  Channel &findChannel(string &name);
   void removeClient(int fd);
 
 private:
