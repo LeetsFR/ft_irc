@@ -1,6 +1,7 @@
 #include "IRC.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
+#include "libirc.hpp"
 
 bool run = false;
 
@@ -39,7 +40,7 @@ bool IRC::findNickname(const string &nickname) {
     if (it->getNickname() == nickname)
       return true;
   }
-  // throw logic_error("Error: Nickname not found");
+  cerr << printTime() << RED "Error: Nickname not found" << RESET << endl;
   return (false);
 }
 
@@ -73,6 +74,23 @@ Channel &IRC::findChannel(const string &channelName) {
   throw logic_error("Error: Channel not found");
 }
 
+void IRC::createChannel(const string &channelName) { _listChannel.push_back(Channel(channelName)); }
+
+void IRC::removeClient(int fd) {
+  epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, &_event);
+  vector<Client>::iterator it;
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->getSocket() == fd) {
+      _listClient.erase(it);
+      cout << printTime() << "(IP: " << it->getIp() << " - PORT: " << it->getPort()
+           << ") Client disconnected" << endl;
+      close(fd);
+      return;
+    }
+  }
+  throw logic_error("Error: Failed to find client");
+}
+
 void IRC::_addNewClient() {
   sockaddr_in clientAddress;
   int addrlen = sizeof(clientAddress);
@@ -94,21 +112,6 @@ void IRC::_addNewClient() {
        << ") Client connected" << endl;
 }
 
-void IRC::removeClient(int fd) {
-  epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, &_event);
-  vector<Client>::iterator it;
-  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
-    if (it->getSocket() == fd) {
-      _listClient.erase(it);
-      cout << printTime() << "(IP: " << it->getIp() << " - PORT: " << it->getPort()
-           << ") Client disconnected" << endl;
-      close(fd);
-      return;
-    }
-  }
-  throw logic_error("Error: Failed to find client");
-}
-
 void IRC::_getEventClient(int fd) {
   string message;
 
@@ -116,7 +119,7 @@ void IRC::_getEventClient(int fd) {
     removeClient(fd);
     return;
   }
-  cout << "message: " << message << endl;
+  cout << printTime() << message << endl;
   Client &client = findClient(fd);
   client.handleMessage(message, *this);
 }

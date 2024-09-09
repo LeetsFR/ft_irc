@@ -12,9 +12,9 @@ public:
 
 private:
   IRC &_serv;
-
   void _managePING(Client &client);
   void _manageKICK(string &message, Client &client);
+  void _createChannel(string &message);
 };
 
 #endif

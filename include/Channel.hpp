@@ -8,7 +8,7 @@ class Client;
 class Channel {
 
 public:
-  Channel(string &name);
+  Channel(const string &name);
   ~Channel();
 
   const string &getName() const;

@@ -7,6 +7,7 @@
 
 typedef enum {
   KICK,
+  JOIN,
   PRIVMSG,
   PING
 
@@ -29,6 +30,7 @@ public:
   Client &findClient(int fd);
   Client &findClient(const string &);
   Channel &findChannel(const string &name);
+  void createChannel(const string& channelName);
   void removeClient(int fd);
 
 private:

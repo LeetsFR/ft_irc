@@ -2,7 +2,7 @@
 #include "Client.hpp"
 #include "libirc.hpp"
 
-Channel::Channel(string &name) : _name(name) {}
+Channel::Channel(const string &name) : _name(name) {}
 
 Channel::~Channel() {}
 

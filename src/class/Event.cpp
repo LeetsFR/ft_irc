@@ -9,12 +9,20 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
   case PING:
     _managePING(client);
     break;
+  case JOIN:
+    _createChannel(message);
+    break;
   case PRIVMSG:
     break;
   case KICK:
     _manageKICK(message, client);
     break;
   }
+}
+
+void Event::_createChannel(string &message) { 
+
+    
 }
 
 void Event::_managePING(Client &client) {
