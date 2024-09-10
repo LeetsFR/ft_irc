@@ -46,6 +46,8 @@ uint16_t Client::getPort() const { return ntohs(_clientAdress.sin_port); }
 
 const string &Client::getNickname() const { return (this->_nickname); }
 
+const string &Client::getHostname() const { return (this->_hostname); }
+
 const string &Client::getUniqId() const { return (this->_uniqId); }
 
 void Client::handleMessage(std::string message, IRC &server) {

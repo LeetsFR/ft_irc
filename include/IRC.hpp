@@ -6,11 +6,20 @@
 #define MAX_EVENT 200
 
 typedef enum {
-  KICK,
-  JOIN,
-  PRIVMSG,
-  PING
+  ERROR = -1,
 
+  PRIVMSG,
+  PING,
+  JOIN,
+
+  KICK,
+  INVITE,
+  TOPIC,
+  MODE_I,
+  MODE_T,
+  MODE_K,
+  MODE_O,
+  MODE_L
 } typeMsg;
 
 class Client;
@@ -26,11 +35,13 @@ public:
   string getName();
   int getSocket();
   bool checkPassword(const string &);
+  void printAllClient() const;
+  void printAllChannel() const;
   bool findNickname(const string &);
   Client &findClient(int fd);
   Client &findClient(const string &);
   Channel &findChannel(const string &name);
-  void createChannel(const string& channelName);
+  void createChannel(const string &channelName);
   void removeClient(int fd);
 
 private:

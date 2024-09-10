@@ -33,6 +33,24 @@ int IRC::getSocket() { return _serverSocket; }
 
 bool IRC::checkPassword(const string &password) { return password == _password; }
 
+void IRC::printAllClient() const {
+  vector<Client>::const_iterator it;
+  cout << printTime() << "Client :" << endl;
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    cout << "socket = " << it->getSocket() << endl;
+    cout << "nickname = " << it->getNickname() << endl;
+    cout << "hostname = " << it->getHostname() << endl;
+  }
+}
+
+void IRC::printAllChannel() const {
+  vector<Channel>::const_iterator it;
+  cout << printTime() << "Channel:" << endl;
+  for (it = _listChannel.begin(); it != _listChannel.end(); ++it) {
+    cout << "name = " << it->getName() << endl;
+  }
+}
+
 bool IRC::findNickname(const string &nickname) {
   vector<Client>::iterator it;
 

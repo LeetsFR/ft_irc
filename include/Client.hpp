@@ -18,6 +18,7 @@ public:
   const string &getIp() const;
   uint16_t getPort() const;
   const string &getNickname() const;
+  const string& getHostname() const;
   const string &getUniqId() const;
   void changeNickname(string &);
   void handleMessage(string, IRC &server);

@@ -1,7 +1,5 @@
 #include "libirc.hpp"
 #include "IRC.hpp"
-#include <iterator>
-#include <vector>
 
 bool portIsValid(int port) {
   if (port == 6667)
@@ -35,18 +33,19 @@ void handleSigint(int sig) {
 }
 
 bool kickParsing(string &message, string &channelName, string &kickUserName, string &reason) {
-
   int pos = message.find(' ');
   int pos2 = message.find(pos + 1, ' ');
+  int pos3 = message.find(pos2 + 1, ' ');
 
-  channelName = string(message, 0, pos);
-  kickUserName = string(message, pos + 1, pos2);
-  reason = string(message, pos2 + 1, string::npos);
-  cout << "Channel = " << channelName << endl;
-  cout << "kickusername = " << kickUserName << endl;
-  cout << "reason = " << reason << endl;
+  channelName = string(message, pos + 1, pos2);
+  kickUserName = string(message, pos2 + 1, pos2);
+  reason = string(message, pos3 + 2, string::npos);
+  cout << "Channel = " << channelName << "X" << endl;
+  cout << "kickusername = " << kickUserName << "X" << endl;
+  cout << "reason = " << reason << "X" << endl;
   return true;
 }
+
 bool getMessage(int fd, string &message) {
   char buffer[RECV_SIZE];
   int read_size = RECV_SIZE;

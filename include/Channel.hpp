@@ -18,7 +18,7 @@ public:
   void kickClient(Client &);
 
 private:
-  string &_name;
+  const string _name;
   map<Client, bool> _listClient;
 };
 

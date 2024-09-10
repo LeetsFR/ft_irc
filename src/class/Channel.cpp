@@ -6,6 +6,9 @@ Channel::Channel(const string &name) : _name(name) {}
 
 Channel::~Channel() {}
 
+
+const string &Channel::getName() const { return _name; }
+
 bool Channel::clientIsOperator(Client &client) {
   map<Client, bool>::iterator it;
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
@@ -24,8 +27,6 @@ void Channel::kickClient(Client &client) {
   }
   throw logic_error("Error: Don't find Client kickClient()");
 }
-
-const string &Channel::getName() const { return _name; }
 
 void Channel::sendMessage(const string &message) {
   map<Client, bool>::iterator it;
