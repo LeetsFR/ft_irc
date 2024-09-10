@@ -19,7 +19,9 @@ public:
 
 private:
   string &_name;
+  string _topic;
   map<Client, bool> _listClient;
+  vector<Client> _BannedClient;
 };
 
 #endif

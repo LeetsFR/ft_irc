@@ -40,7 +40,7 @@ bool IRC::findNickname(const string &nickname) {
     if (it->getNickname() == nickname)
       return true;
   }
-  cerr << printTime() << RED "Error: Nickname not found" << RESET << endl;
+  // cerr << printTime() << RED "Error: Nickname not found" << RESET << endl;
   return (false);
 }
 

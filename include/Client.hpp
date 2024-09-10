@@ -26,7 +26,7 @@ public:
 
 private:
   void configMessage(string &, IRC &server);
-  void receiveMessage(string &, IRC &server);
+  int receiveMessage(string &, IRC &server);
   bool correctNickFormat(string &);
 
   static IRC &serv;

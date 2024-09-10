@@ -47,11 +47,13 @@ bool kickParsing(string &message, string &channelName, string &kickUserName, str
   cout << "reason = " << reason << endl;
   return true;
 }
+
+
 bool getMessage(int fd, string &message) {
   char buffer[RECV_SIZE];
   int read_size = RECV_SIZE;
 
-  while (read_size == RECV_SIZE && message.find('\n') == string::npos) {
+  while (read_size == RECV_SIZE) {
     read_size = recv(fd, buffer, RECV_SIZE, 0);
     if (read_size == 0)
       return false;

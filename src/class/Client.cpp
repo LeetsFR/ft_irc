@@ -6,7 +6,7 @@
 /*   By: scely <scely@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/30 19:49:17 by scely             #+#    #+#             */
-/*   Updated: 2024/09/06 13:34:30 by scely            ###   ########.fr       */
+/*   Updated: 2024/09/10 13:09:01 by scely            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,33 +136,91 @@ void Client::configMessage(std::string &message, IRC &server) {
   } else if (!this->_nickname.size() || !this->_username.size())
     return;
   else {
+    std::string capEndMessage = REP_CAPEND(this->_nickname);
+    if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    this->_isConnected = true;
   }
-  std::string capEndMessage = REP_CAPEND(this->_nickname);
-  if (send(this->_socket, capEndMessage.c_str(), capEndMessage.size(), 0) == -1)
-    cerr << RED "Error: fail to send message" RESET << endl;
-  this->_isConnected = true;
 }
 
-void Client::receiveMessage(std::string &message, IRC &server) {
-  if (!message.compare(0, 4, "PING")) {
-    string pingMessage = "PING " + this->_nickname + "\r\n";
-    if (!message.compare(pingMessage)) {
-      std::string pongMessage = REP_PONG(this->_nickname);
-      if (send(this->_socket, pongMessage.c_str(), pongMessage.size(), 0) == -1)
-        cerr << RED "Error: fail to send message" RESET << endl;
-    } else {
-      if (!message.compare("PING\r\n")) {
-        std::string needMoreMessage = ERR_NEEDMOREPARAMS(server.getName(), this->_nickname);
-        if (send(this->_socket, needMoreMessage.c_str(), needMoreMessage.size(), 0) == -1)
-          cerr << RED "Error: fail to send message" RESET << endl;
-      } else {
-        std::string noOriginMessage = ERR_NOORIGIN(server.getName(), this->_nickname);
-        if (send(this->_socket, noOriginMessage.c_str(), noOriginMessage.size(), 0) == -1)
-          cerr << RED "Error: fail to send message" RESET << endl;
-      }
-    }
-    // reste des commande;
+int Client::receiveMessage(std::string &message, IRC &server) {
+  
+  typeMsg type = ERROR;
+  if (message.find("PRIVMSG", 0))
+  {
+    //  ERR_NOSUCHNICK (401)
+    //  ERR_CANNOTSENDTOCHAN (404)
+    //  ERR_NOTEXTTOSEND (412) 
+    //  ERR_INPUTTOOLONG (417)
+    
+  } else if (message.find("PING", 0))
+  {
+    //  ERR_NEEDMOREPARAMS (461) 
+  } else if (message.find("JOIN", 0))
+  {    
+    // ERR_NEEDMOREPARAMS (461)
+    // ERR_NOSUCHCHANNEL (403)
+    // ERR_TOOMANYCHANNELS (405)
+    // ERR_BADCHANNELKEY (475)
+    // ERR_BANNEDFROMCHAN (474)
+    // ERR_CHANNELISFULL (471)
+    // ERR_INVITEONLYCHAN (473)
+    // ERR_BADCHANMASK (476)
+
+    // A Maxime de gerer
+    // RPL_TOPIC (332)
+    // RPL_TOPICWHOTIME (333)
+    // RPL_NAMREPLY (353)
+    // RPL_ENDOFNAMES (366)
+
+  } else if (message.find("KICK", 0))
+  {
+    // ERR_NEEDMOREPARAMS (461)
+    // ERR_NOSUCHCHANNEL (403)
+    // ERR_CHANOPRIVSNEEDED (482)
+    // ERR_USERNOTINCHANNEL (441)
+    // ERR_NOTONCHANNEL (442)
+
+  } else if (message.find("INVITE", 0))
+  {
+
+    // ERR_NEEDMOREPARAMS (461)
+    // ERR_NOSUCHCHANNEL (403)
+    // ERR_NOTONCHANNEL (442)
+    // ERR_CHANOPRIVSNEEDED (482)
+    // ERR_USERONCHANNEL (443)
+    
+    // a max de gerer
+    // RPL_INVITING (341)
+
+  } else if (message.find("TOPIC", 0))
+  {
+    // ERR_NEEDMOREPARAMS (461)
+    // ERR_NOSUCHCHANNEL (403)
+    // ERR_NOTONCHANNEL (442)
+    // ERR_CHANOPRIVSNEEDED (482)
+
+    // a max de gerer
+    // RPL_NOTOPIC (331)
+    // RPL_TOPIC (332)
+    // RPL_TOPICWHOTIME (333)
+
+  } 
+  // =============================================
+  // VOIR SI ON PEUT FAIRE UNE FONCTION GERER MODE
+  if (message.find("MODE_I", 0))
+  {
+  } else if (message.find("MODE_T", 0))
+  {
+  } else if (message.find("MODE_K", 0))
+  {
+  } else if (message.find("MODE_O", 0))
+  {
+  } else if (message.find("MODE_L", 0))
+  {
+
   }
+    
 }
 
 bool Client::correctNickFormat(std::string &nick) {

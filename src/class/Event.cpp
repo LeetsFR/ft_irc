@@ -22,7 +22,7 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
 
 void Event::_createChannel(string &message) { 
 
-    
+    (void)message;
 }
 
 void Event::_managePING(Client &client) {
