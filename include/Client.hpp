@@ -2,7 +2,6 @@
 #define __CLIENT__
 
 #include "libirc.hpp"
-#include <netinet/in.h>
 
 #define MAX_CLIENT_NAME 9
 

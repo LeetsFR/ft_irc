@@ -28,8 +28,8 @@ void Channel::kickClient(Client &client) {
   throw logic_error("Error: Don't find Client kickClient()");
 }
 
-void Channel::sendMessage(const string &message) {
-  map<Client, bool>::iterator it;
+void Channel::sendMessage(const string &message) const {
+  map<Client, bool>::const_iterator it;
 
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
     if (send(it->first.getSocket(), message.c_str(), message.size(), 0) == -1)

@@ -13,6 +13,7 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
     break;
   case PING:
     _managePING(client);
+    break;
   case JOIN:
     _createChannel(message);
     break;

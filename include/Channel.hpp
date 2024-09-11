@@ -13,12 +13,13 @@ public:
 
   const string &getName() const;
   void joinChannel();
-  void sendMessage(const string &);
+  void sendMessage(const string &) const;
   bool clientIsOperator(Client &);
   void kickClient(Client &);
 
 private:
   const string _name;
+  const string _password;
   map<Client, bool> _listClient;
 };
 
