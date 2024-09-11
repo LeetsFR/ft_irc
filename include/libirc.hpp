@@ -49,6 +49,6 @@ int convertIntSafe(const string &n);
 string printTime();
 vector<string> ft_split(const string &, const string &);
 bool kickParsing(string &message, string &, string &, string &);
-bool joinParsing(string &message, vector<string> &channel, vector<string> &code);
+bool joinParsing(string &message, vector<string> &channel, vector<string> &password);
 
 #endif

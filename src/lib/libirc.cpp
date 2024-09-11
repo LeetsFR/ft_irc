@@ -44,58 +44,68 @@ bool kickParsing(string &message, string &channelName, string &kickUserName, str
   return true;
 }
 
-bool joinParsing(string &message, vector<string> &channel, vector<string> password) {
-  int typeEndPos = message.find(' ');
-  int channelEndPos = message.find(' ', typeEndPos);
-  string channelBuffer = message.substr(typeEndPos, channelEndPos - typeEndPos);
-  int start = typeEndPos;
-  int end;
+bool joinParsing(string &message, vector<string> &channel, vector<string> &password) {
+  string::size_type typeEndPos = message.find(' ');
+  string::size_type channelEndPos = message.find(' ', typeEndPos + 1);
+  string channelBuffer = message.substr(typeEndPos + 1, channelEndPos - typeEndPos - 1);
+  string::size_type start = 0;
+  string::size_type end;
   while ((end = channelBuffer.find(',', start)) != string::npos) {
-    start = end;
-    channel.push_back(message.substr(start, end));
+    channel.push_back(channelBuffer.substr(start, end - start));
+    start = end + 1;
   }
+  channel.push_back(channelBuffer.substr(start));
+  start = 0;
   if (channelEndPos != string::npos) {
-    string passwordBuffer = message.substr(channelEndPos);
-    start = channelEndPos;
-    while ((end = channelBuffer.find(',', start)) != string::npos) {
-      start = end;
-      password.push_back(message.substr(start, end));
+    string passwordBuffer = message.substr(channelEndPos + 1);
+    cout << passwordBuffer << endl;
+    start = 0;
+    while ((end = passwordBuffer.find(',', start)) != string::npos) {
+      password.push_back(passwordBuffer.substr(start, end - start));
+      start = end + 1;
     }
-    return true;
+    password.push_back(passwordBuffer.substr(start));
+  }
+  while (password.size() < channel.size()) {
+    password.push_back("");
   }
 
-  bool getMessage(int fd, string &message) {
-    char buffer[RECV_SIZE];
-    int read_size = RECV_SIZE;
+  vector<string>::iterator it;
+  return true;
+}
 
-    while (read_size == RECV_SIZE) {
-      read_size = recv(fd, buffer, RECV_SIZE, 0);
-      if (read_size == 0)
-        return false;
-      else if (read_size == -1)
-        throw logic_error("Error: Failed to recv the client socket");
-      message.append(buffer, read_size);
-    }
-    return true;
+bool getMessage(int fd, string &message) {
+  char buffer[RECV_SIZE];
+  int read_size = RECV_SIZE;
+
+  while (read_size == RECV_SIZE) {
+    read_size = recv(fd, buffer, RECV_SIZE, 0);
+    if (read_size == 0)
+      return false;
+    else if (read_size == -1)
+      throw logic_error("Error: Failed to recv the client socket");
+    message.append(buffer, read_size);
   }
+  return true;
+}
 
-  string printTime() {
-    time_t rawtime;
-    struct tm *timeinfo;
-    char buffer[sizeof("[00:00:00] ")];
+string printTime() {
+  time_t rawtime;
+  struct tm *timeinfo;
+  char buffer[sizeof("[00:00:00] ")];
 
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    strftime(buffer, sizeof("[00:00:00] "), "[%X] ", timeinfo);
-    return string(buffer);
-  }
+  time(&rawtime);
+  timeinfo = localtime(&rawtime);
+  strftime(buffer, sizeof("[00:00:00] "), "[%X] ", timeinfo);
+  return string(buffer);
+}
 
-  int convertIntSafe(const string &n) {
-    char *endPtr;
-    long safe = strtol(n.c_str(), &endPtr, 10);
-    if (*endPtr != '\0' && *endPtr != '\n')
-      throw logic_error("Error: invalid argument");
-    if (errno == ERANGE)
-      throw logic_error("Error: out of range argument");
-    return safe;
-  }
+int convertIntSafe(const string &n) {
+  char *endPtr;
+  long safe = strtol(n.c_str(), &endPtr, 10);
+  if (*endPtr != '\0' && *endPtr != '\n')
+    throw logic_error("Error: invalid argument");
+  if (errno == ERANGE)
+    throw logic_error("Error: out of range argument");
+  return safe;
+}

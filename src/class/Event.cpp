@@ -3,6 +3,7 @@
 #include "Client.hpp"
 #include "IRC.hpp"
 #include "libirc.hpp"
+#include <vector>
 
 Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(serv) {
 
@@ -37,7 +38,19 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
   }
 }
 
-void Event::_createChannel(string &message) { (void)message; }
+void Event::_createChannel(string &message) {
+
+  vector<string> channelName;
+  vector<string> password;
+  joinParsing(message, channelName, password);
+  vector<string>::iterator i = channelName.begin();
+  vector<string>::iterator j = password.begin();
+  while (i != channelName.end()) {
+    //find channel si il existe si non le creer avec le password 
+    ++i;
+    ++j;
+  }
+}
 
 void Event::_managePING(Client &client) {
   std::string pongMessage = REP_PONG(client.getNickname());
