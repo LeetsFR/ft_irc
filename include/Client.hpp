@@ -19,15 +19,22 @@ public:
   uint16_t getPort() const;
   const string &getNickname() const;
   const string &getUniqId() const;
-  void changeNickname(string &);
   void handleMessage(string, IRC &server);
 
   bool operator==(const Client &) const;
 
 private:
   void configMessage(string &, IRC &server);
-  int receiveMessage(string &, IRC &server);
+  // int receiveMessage(string &, IRC &server);
   bool correctNickFormat(string &);
+  
+  typeMsg parsPrivmsg(string &, IRC &server);
+  typeMsg parsJoin(string &, IRC &server);
+  typeMsg parsPing(string &, IRC &server);
+  typeMsg parsKick(string &, IRC &server);
+  typeMsg parsInvite(string &, IRC &server);
+  typeMsg parsTopic(string &, IRC &server);
+  typeMsg parsMode(string &, IRC &server);
 
   static IRC &serv;
   int _socket;
@@ -45,5 +52,7 @@ private:
 
   vector<string> _messageTmp;
 };
+
+
 
 #endif

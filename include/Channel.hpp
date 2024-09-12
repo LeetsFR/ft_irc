@@ -18,7 +18,7 @@ public:
   void kickClient(Client &);
 
 private:
-  string &_name;
+  string _name;
   string _topic;
   map<Client, bool> _listClient;
   vector<Client> _BannedClient;

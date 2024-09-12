@@ -6,7 +6,7 @@
 /*   By: scely <scely@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/30 19:49:17 by scely             #+#    #+#             */
-/*   Updated: 2024/09/10 13:09:01 by scely            ###   ########.fr       */
+/*   Updated: 2024/09/12 23:02:34 by scely            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,10 +51,24 @@ const string &Client::getUniqId() const { return (this->_uniqId); }
 void Client::handleMessage(std::string message, IRC &server) {
   if (this->_isConnected == false)
     this->configMessage(message, server);
-  this->receiveMessage(message, server);
+  // this->receiveMessage(message, server);
 }
 
-void Client::configMessage(std::string &message, IRC &server) {
+bool Client::correctNickFormat(std::string &nick) {
+  size_t nickSize = nick.size();
+  if (std::isdigit(nick[0]))
+    return (false);
+
+  for (size_t i = 0; i < nickSize; i++) {
+    if (!(std::isalnum(nick[i]) || (nick[i] >= '[' && nick[i] <= ']') ||
+          (nick[i] >= '{' && nick[i] <= '}')))
+      return (false);
+  }
+  return (true);
+}
+
+void Client::configMessage(std::string &message, IRC &server)
+{
   // faire une fonction dans le cas ou l'on recoit un message partiel
   // faire une fonction checker dans le cas ou lon recoit plusieurs fois la meme commande
   this->_messageTmp = ft_split(message, "\r\n");
@@ -98,7 +112,6 @@ void Client::configMessage(std::string &message, IRC &server) {
         cerr << RED "Error: fail to send message" RESET << endl;
       this->_badConfig = true;
     } else if (this->correctNickFormat(tmp) == false) {
-      // RFC 1459 ils disent 9 caratere dans la 2812 aucune mention
       std::string wrongChar = ERR_ERRONEUSNICKNAME(this->_nickname, tmp);
       if (send(this->_socket, wrongChar.c_str(), wrongChar.size(), 0) == -1)
         cerr << RED "Error: fail to send message" RESET << endl;
@@ -124,7 +137,16 @@ void Client::configMessage(std::string &message, IRC &server) {
       // NEEDMOREPARAM
       this->_badConfig = true;
     }
-    this->_username = "en attente de parsing";
+    if (currentMessage.find(':') != std::string::npos)
+      tmp = currentMessage.substr(currentMessage.find(':') + 1);
+    else
+      tmp = "";
+    if (tmp.size() == 0)
+    {
+      // NEEDMOREPARAM
+      this->_badConfig = true;
+    }
+    this->_username = tmp;
     this->_messageTmp.erase(this->_messageTmp.begin());
   }
 
@@ -143,103 +165,260 @@ void Client::configMessage(std::string &message, IRC &server) {
   }
 }
 
-int Client::receiveMessage(std::string &message, IRC &server) {
-  
-  typeMsg type = ERROR;
-  if (message.find("PRIVMSG", 0))
+typeMsg Client::parsPrivmsg(string &message, IRC &server)
+{
+  std::vector<std::string> privmsgParam = ft_split(message, " ");
+  std::string errorMsg;
+  if (privmsgParam.size() < 3)
   {
-    //  ERR_NOSUCHNICK (401)
-    //  ERR_CANNOTSENDTOCHAN (404)
-    //  ERR_NOTEXTTOSEND (412) 
-    //  ERR_INPUTTOOLONG (417)
-    
-  } else if (message.find("PING", 0))
+    errorMsg = ERR_NEEDMOREPARAMS(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);  
+  }
+  std::string currentToken;
+  currentToken = pingParam[1];
+  if (currentToken[0] == '#' && findChannel(currentToken) == false)
   {
-    //  ERR_NEEDMOREPARAMS (461) 
-  } else if (message.find("JOIN", 0))
-  {    
-    // ERR_NEEDMOREPARAMS (461)
-    // ERR_NOSUCHCHANNEL (403)
-    // ERR_TOOMANYCHANNELS (405)
-    // ERR_BADCHANNELKEY (475)
-    // ERR_BANNEDFROMCHAN (474)
-    // ERR_CHANNELISFULL (471)
-    // ERR_INVITEONLYCHAN (473)
-    // ERR_BADCHANMASK (476)
-
-    // A Maxime de gerer
-    // RPL_TOPIC (332)
-    // RPL_TOPICWHOTIME (333)
-    // RPL_NAMREPLY (353)
-    // RPL_ENDOFNAMES (366)
-
-  } else if (message.find("KICK", 0))
+    // ERR_CANNOTSENDTOCHAN (404) => max
+    errorMsg = ERR_NOSUCHCHANNEL(this->_nickname, currentToken);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  } else if (currentToken[0] != '#' && findClient(currentToken) == false)
   {
-    // ERR_NEEDMOREPARAMS (461)
-    // ERR_NOSUCHCHANNEL (403)
-    // ERR_CHANOPRIVSNEEDED (482)
-    // ERR_USERNOTINCHANNEL (441)
-    // ERR_NOTONCHANNEL (442)
-
-  } else if (message.find("INVITE", 0))
+    errorMsg = ERR_NOSUCHNICK(this->_nickname, currentToken);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  currentToken = pingParam[2];
+  std::string text;
+  if(currentToken[0] == ':')
+    text = message.substr(message.find(":"));
+  if (text.size() <= 1)
   {
+    errorMsg = ERR_NOTEXTTOSEND(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  return (PRIVMSG); 
+}
 
-    // ERR_NEEDMOREPARAMS (461)
-    // ERR_NOSUCHCHANNEL (403)
+typeMsg Client::parsPing(std::string &message, IRC &server)
+{  
+  std::vector<std::string> pingParam = ft_split(message, " ");
+  if (pingParam.size() <= 2)
+  {
+    std::string erroMsg;
+    errorMsg = ERR_NEEDMOREPARAMS(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl; 
+    return (ERROR); 
+  }
+  return (PING);
+}
+
+typeMsg Client::parsInvite(std::string &message, IRC &server)
+{
+  // [12:48:27] INVITE SAMUEL #SAMUEL
+  // [12:48:48] INVITE SAMUEL SABRINA || error
+  // [12:49:12] INVITE sabrina,carla #SAMUEL
+  // [12:50:53] INVITE sabrina #SAMUEL
+  // [12:51:00] INVITE  #SAMUEL || error
+
+  // Gestion ==> max v
     // ERR_NOTONCHANNEL (442)
     // ERR_CHANOPRIVSNEEDED (482)
     // ERR_USERONCHANNEL (443)
-    
-    // a max de gerer
-    // RPL_INVITING (341)
 
-  } else if (message.find("TOPIC", 0))
+  std::vector<std::string> inviteParam = ft_split(message, " ");
+  std::string erroMsg;
+  if (inviteParam.size() < 3)
   {
-    // ERR_NEEDMOREPARAMS (461)
-    // ERR_NOSUCHCHANNEL (403)
-    // ERR_NOTONCHANNEL (442)
-    // ERR_CHANOPRIVSNEEDED (482)
-
-    // a max de gerer
-    // RPL_NOTOPIC (331)
-    // RPL_TOPIC (332)
-    // RPL_TOPICWHOTIME (333)
-
+    errorMsg = ERR_NEEDMOREPARAMS(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
   } 
-  // =============================================
-  // VOIR SI ON PEUT FAIRE UNE FONCTION GERER MODE
-  if (message.find("MODE_I", 0))
+  else if (inviteParam.size() > 3)
   {
-  } else if (message.find("MODE_T", 0))
-  {
-  } else if (message.find("MODE_K", 0))
-  {
-  } else if (message.find("MODE_O", 0))
-  {
-  } else if (message.find("MODE_L", 0))
-  {
-
+    // TOO MUCH PARAM  ????????
+    // ERR_NEEDMOREPARAMS (461)
+    return (ERROR);
   }
-    
+  std::string inviteToken = inviteParam[1];
+  if (findlcient(inviteToken) == false)
+  {
+    errorMsg = ERR_NOSUCHNICK(this->_nickname, inviteToken);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR); 
+  }
+  std::string inviteToken = inviteParam[2];
+  if (findChannel(inviteToken) == false)
+  {
+    errorMsg = ERR_NOSUCHCHANNEL(this->_nickname, inviteToken);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  return (INVITE);
 }
 
-bool Client::correctNickFormat(std::string &nick) {
-  size_t nickSize = nick.size();
-  if (std::isdigit(nick[0]))
+typeMsg Client::parsTopic(std::string &message, IRC &server)
+{
+  // TOPIC #test :New topic          Setting the topic on "#test" to
+  // TOPIC #test :                   ; Clearing the topic on "#test" => TOPIC -DELETE
+  // TOPIC #test  
+
+  // ERR_NOTONCHANNEL (442)
+  // ERR_CHANOPRIVSNEEDED (482)
+  std::vector<std::string> topicParam = ft_split(message, " ");
+  std::string erroMsg;
+  if (topicParam.size() < 2)
+  {
+    errorMsg = ERR_NEEDMOREPARAMS(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  std::string topicToken = inviteParam[1];
+  if (findChannel(topicToken) == false)
+  {
+    errorMsg = ERR_NOSUCHCHANNEL(this->_nickname, topicToken);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  return (TOPIC);
+}
+
+typeMsg Client::parsKick(std::string &message, IRC &server)
+{
+  // KICK #D SAMEUL : 
+  // KICK #D KIKI :
+  std::vector<std::string> kickParam = ft_split(message, " ");
+  std::string erroMsg;
+  if (kickParam.size() < 4)
+  {
+    errorMsg = ERR_NEEDMOREPARAMS(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  std::string kickToken = kickParam[1];
+  if (findChannel(kickToken) == false)
+  {
+    errorMsg = ERR_NOSUCHCHANNEL(this->_nickname, kickToken);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  std::string kickToken = kickParam[2];
+  if (findlclient(kickToken) == false)
+  {
+    errorMsg = ERR_NOSUCHNICK(this->_nickname, kickToken);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  return (KICK);
+}
+
+typeMsg Client::parsMode(string &message, IRC &server)
+{
+  std::vector<std::string> modeParam = ft_split(message, " ");
+  std::string errorMsg;
+  std::string modeToken;
+  size_t nbParam = modeParam.size();
+  
+  nbParam = modeParam[1];
+  if (findchannel(modetoken) == false)
+  {
+    errorMsg = ERR_NOSUCHCHANNEL(this->_nickname, modeToken);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
     return (false);
-
-  for (size_t i = 0; i < nickSize; i++) {
-    if (!(std::isalnum(nick[i]) || (nick[i] >= '[' && nick[i] <= ']') ||
-          (nick[i] >= '{' && nick[i] <= '}')))
-      return (false);
   }
-  return (true);
+  modeToken = modeParam[2];
+  if (modeToken.size() > 2)
+  {
+    // too much param
+    return (ERROR);
+  } 
+  else if (modeToken[0] != "-" && modeToken[0] != '+')
+  {
+    errorMsg = ERR_NEEDMOREPARAMS(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  else if (modeToken[1] == "i")
+    return (MODE_i);
+  else if (modeToken[1] == "t")
+    return (MODE_t);
+  else if (modeToken[1] == "k")
+  {
+    if (modeToken[0] == '-' || nbParam == 4)
+      return (MODE_k);
+    errorMsg = ERR_NEEDMOREPARAMS(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  else if (modeToken[1] == "o")
+  {
+    if (nbParam == 4)
+      return (MODE_o);
+    errorMsg = ERR_NEEDMOREPARAMS(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  else if (modeToken[1] == "l")
+  {
+    if (modeToken[0] == '-' || nbParam == 4)
+      return (MODE_l);
+    errorMsg = ERR_NEEDMOREPARAMS(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
+  }
+  return (ERROR);
 }
 
-void Client::changeNickname(std::string &nick) {
-  if (nick.size() > 9) {
-    // send a error
-    return;
+typeMsg Client::parsJoin(string &message, IRC &server)
+{
+  std::vector<std::string> joinParam = ft_split(message, " ");
+  std::string errorMsg;
+
+  if (joinParam.size() < 2)
+  {
+    errorMsg = ERR_NEEDMOREPARAMS(this->_nickname);
+    if (send(this->_socket, errorMsg.c_str(), errorMsg.size(), 0) == -1)
+      cerr << RED "Error: fail to send message" RESET << endl;
+    return (ERROR);
   }
-  this->_nickname = nick;
+  return (JOIN);
+}
+
+typeMsg Client::receiveMessage(std::string &message, IRC &server)
+{
+  if (message.find("PRIVMSG ", 0) != std::string::npos)
+    return (this->parsPrivmsg(message, server));
+  else if (message.find("PING ", 0) != std::string::npos)
+    return (this->parsPing(message, server));
+  else if (message.find("JOIN ", 0) != std::string::npos)
+    return (this->parsJoin(message, server));
+  else if (message.find("KICK ", 0) != std::string::npos)
+    return (this->parsKick(message, server));
+  else if (message.find("INVITE ", 0) != std::string::npos)
+    return (this->parsInvite(message, server));
+  else if (message.find("TOPIC ", 0) != std::string::npos)
+    return (this->parsTopic(message, server));
+  else if (message.find("MODE ", 0) != std::string::npos)
+    return (this->parsMode(message, server));
+  return (ERROR);
 }

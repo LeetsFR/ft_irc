@@ -17,6 +17,8 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
   case KICK:
     _manageKICK(message, client);
     break;
+  default:
+    break;
   }
 }
 

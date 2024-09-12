@@ -27,10 +27,27 @@
 
 #define RECV_SIZE 1024
 
+typedef enum {
+  ERROR = -1,
+  
+  PRIVMSG,
+  PING,
+  JOIN,
+  
+  TOPIC,
+  KICK,
+  INVITE,
+  MODE_i,
+  MODE_t,
+  MODE_k,
+  MODE_o,
+  MODE_l
+  // REGARDER SI QUAND IL N'Y PAS DOPERATOR CE QU'IL SE PASSE
+} typeMsg;
+
 
 #define REP_CAPEND(clientName)                                                                     \
-  (string(":") + clientName + " 001 " + clientName + " :Welcome to the Internet Relay Network " +  \
-   clientName "\r\n")
+  (string(":") + clientName + " 001 " + clientName + " :Welcome to the Internet Relay Network " + clientName  + "\r\n")
 #define REP_PONG(serverName) (string("PONG ") + serverName + "\r\n")
 
 #define ERR_NEEDMOREPARAMS(clientName, command)                                                    \

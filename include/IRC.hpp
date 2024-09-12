@@ -5,22 +5,7 @@
 
 #define MAX_EVENT 200
 
-typedef enum {
-  ERROR = -1,
-  
-  PRIVMSG,
-  PING,
-  JOIN,
-  
-  KICK,
-  INVITE,
-  MODE_I,
-  MODE_T,
-  MODE_K,
-  MODE_O,
-  MODE_L
-  // REGARDER SI QUAND IL N'Y PAS DOPERATOR CE QU'IL SE PASSE
-} typeMsg;
+
 
 class Client;
 
