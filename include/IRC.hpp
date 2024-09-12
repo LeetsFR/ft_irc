@@ -2,6 +2,7 @@
 #define __IRC__
 
 #include "libirc.hpp"
+#include <stdatomic.h>
 
 #define MAX_EVENT 200
 

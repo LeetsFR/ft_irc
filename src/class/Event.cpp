@@ -53,7 +53,7 @@ void Event::_createChannel(string &message) {
 }
 
 void Event::_managePING(Client &client) {
-  std::string pongMessage = REP_PONG(client.getNickname());
+  string pongMessage = REP_PONG(client.getNickname());
   if (send(client.getSocket(), pongMessage.c_str(), pongMessage.size(), 0) == -1)
     cerr << RED "Error: fail to send message" RESET << endl;
 }
