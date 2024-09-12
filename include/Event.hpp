@@ -1,6 +1,7 @@
 #ifndef __EVENT__
 #define __EVENT__
 
+#include "Client.hpp"
 #include "IRC.hpp"
 #include "libirc.hpp"
 
@@ -14,7 +15,7 @@ private:
   IRC &_serv;
   void _managePING(Client &client);
   void _manageKICK(string &message, Client &client);
-  void _createChannel(string &message);
+  void _manageJOIN(string &message, Client &client);
 };
 
 #endif

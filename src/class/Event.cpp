@@ -2,8 +2,7 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "IRC.hpp"
-#include "libirc.hpp"
-#include <vector>
+#include <algorithm>
 
 Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(serv) {
 
@@ -16,7 +15,7 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
     _managePING(client);
     break;
   case JOIN:
-    _createChannel(message);
+    _manageJOIN(message, client);
     break;
   case KICK:
     _manageKICK(message, client);
@@ -38,17 +37,22 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
   }
 }
 
-void Event::_createChannel(string &message) {
+void Event::_manageJOIN(string &message, Client &client) {
 
   vector<string> channelName;
   vector<string> password;
   joinParsing(message, channelName, password);
-  vector<string>::iterator i = channelName.begin();
-  vector<string>::iterator j = password.begin();
-  while (i != channelName.end()) {
-    //find channel si il existe si non le creer avec le password 
-    ++i;
-    ++j;
+  vector<string>::iterator it = channelName.begin();
+  vector<string>::iterator jt = password.begin();
+  while (it != channelName.end()) {
+    Channel *channelPtr = _serv.findChannel(*it);
+    if (channelPtr == NULL) {
+      _serv.createChannel(*it, *jt, client);
+    } else {
+      channelPtr->joinChannel(*jt, client);
+    }
+    ++it;
+    ++jt;
   }
 }
 
@@ -61,12 +65,12 @@ void Event::_managePING(Client &client) {
 void Event::_manageKICK(string &message, Client &client) {
   string channelName, kickUserName, reason;
   kickParsing(message, channelName, kickUserName, reason);
-  Channel &channel = _serv.findChannel(channelName);
-  if (channel.clientIsOperator(client) == false) {
+  Channel *channel = _serv.findChannel(channelName);
+  if (channel->clientIsOperator(client) == false) {
     cerr << printTime() << RED "Error: client is not operator he can't KICK" RESET << endl;
     return;
   }
   Client &kickUser = _serv.findClient(kickUserName);
-  channel.kickClient(kickUser);
-  channel.sendMessage(message);
+  channel->kickClient(kickUser);
+  channel->sendMessage(message);
 }

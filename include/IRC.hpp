@@ -2,26 +2,8 @@
 #define __IRC__
 
 #include "libirc.hpp"
-#include <stdatomic.h>
 
 #define MAX_EVENT 200
-
-typedef enum {
-  ERROR = -1,
-
-  PRIVMSG,
-  PING,
-  JOIN,
-
-  KICK,
-  INVITE,
-  TOPIC,
-  MODE_I,
-  MODE_T,
-  MODE_K,
-  MODE_O,
-  MODE_L
-} typeMsg;
 
 class Client;
 
@@ -41,8 +23,9 @@ public:
   bool findNickname(const string &);
   Client &findClient(int fd);
   Client &findClient(const string &);
-  Channel &findChannel(const string &name);
-  void createChannel(const string &channelName);
+  Channel *findChannel(const string &name);
+  void createChannel(const string &name, const string &password, Client &);
+  void joinChannel(Channel *channel, const string &password, Client &);
   void removeClient(int fd);
 
 private:

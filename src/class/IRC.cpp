@@ -82,17 +82,19 @@ Client &IRC::findClient(const string &clientName) {
   throw logic_error("Error: Client not found");
 }
 
-Channel &IRC::findChannel(const string &channelName) {
+Channel *IRC::findChannel(const string &channelName) {
   vector<Channel>::iterator it;
 
   for (it = _listChannel.begin(); it != _listChannel.end(); ++it) {
     if (it->getName() == channelName)
-      return *it;
+      return &(*it);
   }
-  throw logic_error("Error: Channel not found");
+  return NULL;
 }
 
-void IRC::createChannel(const string &channelName) { _listChannel.push_back(Channel(channelName)); }
+void IRC::createChannel(const string &name, const string &password, Client &client) {
+  _listChannel.push_back(Channel(name, password, client));
+}
 
 void IRC::removeClient(int fd) {
   epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, &_event);

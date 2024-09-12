@@ -1,11 +1,14 @@
 #include "libirc.hpp"
-#include "IRC.hpp"
-#include <vector>
 
 bool portIsValid(int port) {
   if (port == 6667)
     return true;
   return false;
+}
+
+void sendRC(string &message, int fd) {
+  if (send(fd, message.c_str(), message.size(), 0) == -1)
+    cerr << printTime() << RED "Error: fail to send message" RESET << endl;
 }
 
 vector<string> ft_split(const string &str, const string &delim) {
