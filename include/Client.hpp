@@ -25,12 +25,12 @@ public:
 
 private:
   void configMessage(string &, IRC &server);
-  // int receiveMessage(string &, IRC &server);
+  typeMsg receiveMessage(string &, IRC &server);
   bool correctNickFormat(string &);
   
   typeMsg parsPrivmsg(string &, IRC &server);
-  typeMsg parsJoin(string &, IRC &server);
-  typeMsg parsPing(string &, IRC &server);
+  typeMsg parsJoin(string &);
+  typeMsg parsPing(string &);
   typeMsg parsKick(string &, IRC &server);
   typeMsg parsInvite(string &, IRC &server);
   typeMsg parsTopic(string &, IRC &server);
@@ -51,6 +51,7 @@ private:
   string _ip;
 
   vector<string> _messageTmp;
+  bool _prevMsgIncomplete;
 };
 
 

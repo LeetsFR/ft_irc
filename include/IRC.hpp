@@ -20,7 +20,8 @@ public:
   string getName();
   int getSocket();
   bool checkPassword(const string &);
-  bool findNickname(const string &);
+  bool doesChannelExist(const string &);
+  bool doesNicknameExist(const string &);
   Client &findClient(int fd);
   Client &findClient(const string &);
   Channel &findChannel(const string &name);

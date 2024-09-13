@@ -33,16 +33,27 @@ int IRC::getSocket() { return _serverSocket; }
 
 bool IRC::checkPassword(const string &password) { return password == _password; }
 
-bool IRC::findNickname(const string &nickname) {
+bool IRC::doesNicknameExist(const string &nickname) {
   vector<Client>::iterator it;
 
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
     if (it->getNickname() == nickname)
       return true;
   }
-  // cerr << printTime() << RED "Error: Nickname not found" << RESET << endl;
   return (false);
 }
+
+bool IRC::doesChannelExist(const string &channel)
+{
+  vector<Channel>::iterator it;
+
+  for (it = _listChannel.begin(); it != _listChannel.end(); ++it) {
+    if (it->getName() == channel)
+      return true;
+  }
+  return (false);
+}
+
 
 Client &IRC::findClient(int fd) {
   vector<Client>::iterator it;
