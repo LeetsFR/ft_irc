@@ -19,6 +19,7 @@ public:
   uint16_t getPort() const;
   const string &getNickname() const;
   const string &getUniqId() const;
+  const string &getUser() const;
   void handleMessage(string, IRC &server);
 
   bool operator==(const Client &) const;
@@ -26,6 +27,8 @@ public:
 private:
   void configMessage(string &, IRC &server);
   typeMsg receiveMessage(string &, IRC &server);
+  void sendMsgToClient(const std::string& message);
+
   bool correctNickFormat(string &);
   
   typeMsg parsPrivmsg(string &, IRC &server);
@@ -54,6 +57,6 @@ private:
   bool _prevMsgIncomplete;
 };
 
-
+std::ostream& operator<<(std::ostream& os, const Client& obj);
 
 #endif

@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <cerrno>
 #include <csignal>
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -29,6 +30,7 @@
 
 typedef enum {
   ERROR = -1,
+  IGNORE,
   
   PRIVMSG,
   PING,
@@ -63,7 +65,7 @@ typedef enum {
   (string(":") + clientName + " 432 " + nick + " :Erroneous nickname\r\n")
 
 
-#define ERR_NOSUCHNICK(clientName, nick) (string(":") + clientName + " 401 " + nick + " :No such nick/channel\r\n")
+#define ERR_NOSUCHNICK(clientName, nick) (string(":") + clientName + " 401 " + nick + " :No such nick\r\n")
 #define ERR_CANNOTSENDTOCHAN(clientName, channel) (string(":") + clientName + " 404 " + channel + " :Cannot send to channel\r\n")
 #define ERR_NOTEXTTOSEND(clientName) (string(":") + clientName + " 412 :No text to send\r\n")
 #define ERR_INPUTTOOLONG(clientName) (string(":") + clientName + " 417 :Input line was too long\r\n")

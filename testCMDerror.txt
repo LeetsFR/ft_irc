@@ -1,0 +1,41 @@
+#PRIVMSG
+
+PRIVMSG SAMUEL #channel :SALUT
+PRIVMSG SAMUEL :
+PRIVMSG  :SALUT
+PRIVMSG #channel :SALUT
+PRIVMSG #channel :
+PRIVMSG #channel SAMUEL :SALUT
+PRIVMSG #channel SAMUEL 
+PRIVMSG wronguser :salut 
+PRIVMSG #wrongchannel :salut 
+PRIVMSG <AVEC UN ESPACE APRES>
+
+#PING
+
+PING
+PING <AVEC UN ESPACE APRES>
+PING xxx xxxx
+PING xx
+
+
+#INVITE
+
+INVITE SAMUEL #channel
+INVITE SAMUEL SABRINA
+INVITE sabrina,carla #channel
+INVITE sabrina #channel
+INVITE #channel
+INVITE SAMUEL
+
+#TOPIC
+
+TOPIC #test :New topic          Setting the topic on "#test" to
+TOPIC #test :                   ; Clearing the topic on "#test" => TOPIC -DELETE
+TOPIC #test
+TOPIC
+
+
+#KICK
+KICK #D SAMEUL : 
+KICK #D wronguser :

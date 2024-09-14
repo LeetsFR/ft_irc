@@ -64,6 +64,7 @@ bool getMessage(int fd, string &message) {
   return true;
 }
 
+
 string printTime() {
   time_t rawtime;
   struct tm *timeinfo;
