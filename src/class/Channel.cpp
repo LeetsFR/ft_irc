@@ -29,6 +29,20 @@ bool Channel::clientIsOperator(Client &client) {
   throw logic_error("Error: Don't find Client clientIsOperator()");
 }
 
+const string Channel::getUserList() const {
+  string userlist;
+
+  map<Client, bool>::const_iterator it;
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->second == true)
+      userlist.append("@");
+    userlist.append(it->first.getNickname());
+    if (std::next(it) != _listClient.end())
+      userlist.append(" ");
+  }
+  return userlist;
+}
+
 bool Channel::isInvitedClient(const string &name) const {
   vector<string>::const_iterator it;
   for (it = _invitedClient.begin(); it != _invitedClient.end(); ++it) {
@@ -46,7 +60,7 @@ void Channel::joinChannel(const string &password, Client &client) {
       return;
     }
   }
-  if (password != password) {
+  if (_password != password) {
     string msg = ERR_BADCHANNELKEY(client.getNickname(), _name);
     sendRC(msg, client.getSocket());
     return;
@@ -66,9 +80,12 @@ void Channel::joinChannel(const string &password, Client &client) {
     string msg = RPL_TOPIC(client.getNickname(), _name, _topic);
     sendRC(msg, client.getSocket());
   }
-  string msg = RPL_NAMREPLY_AND_ENDOFNAMES(client.getNickname(), _name, _userList());
+  string msg =
+      RPL_NAMREPLY_AND_ENDOFNAMES(client.getNickname(), _name, getUserList());
   sendRC(msg, client.getSocket());
   _listClient.insert(make_pair(client, true));
+  string joinMsg = ":" + client.getNickname() + " JOIN :" + _name;
+  sendAllOtherClient(joinMsg, client.getSocket());
 }
 
 void Channel::kickClient(Client &client) {
@@ -81,21 +98,19 @@ void Channel::kickClient(Client &client) {
   throw logic_error("Error: Don't find Client kickClient()");
 }
 
-void Channel::sendMessage(const string &message) const {
+void Channel::sendAllOtherClient(const string &message, int ignoredFd) const {
+  map<Client, bool>::const_iterator it;
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->first.getSocket() != ignoredFd)
+      sendRC(message, it->first.getSocket());
+  }
+}
+
+void Channel::sendAllClient(const string &message) const {
   map<Client, bool>::const_iterator it;
 
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
     if (send(it->first.getSocket(), message.c_str(), message.size(), 0) == -1)
       cerr << printTime() << RED "Error: fail to send message" RESET << endl;
   }
-}
-
-string Channel::_userList() const {
-  string userlist;
-
-  map<Client, bool>::const_iterator it;
-  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
-    //le cas ou c'est un operator je @ sinon je l'ecris juste 
-  }
-  return userlist;
 }

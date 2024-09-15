@@ -2,9 +2,10 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "IRC.hpp"
-#include <algorithm>
+#include "libirc.hpp"
 
-Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(serv) {
+Event::Event(string &message, Client &client, typeMsg type, IRC &serv)
+    : _serv(serv) {
 
   switch (type) {
   case ERROR:
@@ -21,6 +22,7 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
     _manageKICK(message, client);
     break;
   case INVITE:
+    _manageINVITE(message, client);
     break;
   case TOPIC:
     break;
@@ -35,6 +37,26 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
   case MODE_L:
     break;
   }
+}
+void Event::_managePING(Client &client) {
+  string pongMessage = REP_PONG(client.getNickname());
+  if (send(client.getSocket(), pongMessage.c_str(), pongMessage.size(), 0) ==
+      -1)
+    cerr << RED "Error: fail to send message" RESET << endl;
+}
+
+void Event::_manageKICK(string &message, Client &client) {
+  string channelName, kickUserName, reason;
+  kickParsing(message, channelName, kickUserName, reason);
+  Channel *channel = _serv.findChannel(channelName);
+  if (channel->clientIsOperator(client) == false) {
+    cerr << printTime()
+         << RED "Error: client is not operator he can't KICK" RESET << endl;
+    return;
+  }
+  Client &kickUser = _serv.findClient(kickUserName);
+  channel->kickClient(kickUser);
+  channel->sendAllClient(message);
 }
 
 void Event::_manageJOIN(string &message, Client &client) {
@@ -56,21 +78,13 @@ void Event::_manageJOIN(string &message, Client &client) {
   }
 }
 
-void Event::_managePING(Client &client) {
-  string pongMessage = REP_PONG(client.getNickname());
-  if (send(client.getSocket(), pongMessage.c_str(), pongMessage.size(), 0) == -1)
-    cerr << RED "Error: fail to send message" RESET << endl;
-}
-
-void Event::_manageKICK(string &message, Client &client) {
-  string channelName, kickUserName, reason;
-  kickParsing(message, channelName, kickUserName, reason);
+void Event::_manageINVITE(string &message, Client &client) {
+  string clientName, channelName;
+  inviteParsing(message, clientName, channelName);
   Channel *channel = _serv.findChannel(channelName);
-  if (channel->clientIsOperator(client) == false) {
-    cerr << printTime() << RED "Error: client is not operator he can't KICK" RESET << endl;
-    return;
+  if (channel == NULL) {
+    string msg = ERR_NOSUCHCHANNEL(clientName, channelName);
+    sendRC(msg, client.getSocket());
   }
-  Client &kickUser = _serv.findClient(kickUserName);
-  channel->kickClient(kickUser);
-  channel->sendMessage(message);
+  Client * client = channel->findClient(clientName);
 }

@@ -2,7 +2,6 @@
 #define __CHANNEL__
 
 #include "libirc.hpp"
-#include <vector>
 
 class Client;
 
@@ -13,11 +12,14 @@ public:
   ~Channel();
 
   const string &getName() const;
+  const string getUserList() const;
   void joinChannel(const string &password, Client &client);
-  void sendMessage(const string &) const;
   bool clientIsOperator(Client &);
   void kickClient(Client &);
+  void sendAllOtherClient(const string &, int) const;
+  void sendAllClient(const string &) const;
   bool isInvitedClient(const string &name) const;
+  Client *findClient(const string &) const;
 
 private:
   const string _name;
@@ -30,8 +32,6 @@ private:
   vector<string> _invitedClient;
   bool _topicOnlyOperator;
   map<Client, bool> _listClient;
-
-  string _userList() const;
 };
 
 #endif

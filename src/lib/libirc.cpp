@@ -6,7 +6,7 @@ bool portIsValid(int port) {
   return false;
 }
 
-void sendRC(string &message, int fd) {
+void sendRC(const string &message, int fd) {
   if (send(fd, message.c_str(), message.size(), 0) == -1)
     cerr << printTime() << RED "Error: fail to send message" RESET << endl;
 }
@@ -36,7 +36,8 @@ void handleSigint(int sig) {
   cout << "\r";
 }
 
-bool kickParsing(string &message, string &channelName, string &kickUserName, string &reason) {
+bool kickParsing(string &message, string &channelName, string &kickUserName,
+                 string &reason) {
   int pos = message.find('#'); // a modifier les channel ne sont pas que des #
   int pos2 = message.find(' ', pos);
   int pos3 = message.find(' ', pos2 + 1);
@@ -47,10 +48,12 @@ bool kickParsing(string &message, string &channelName, string &kickUserName, str
   return true;
 }
 
-bool joinParsing(string &message, vector<string> &channel, vector<string> &password) {
+bool joinParsing(string &message, vector<string> &channel,
+                 vector<string> &password) {
   string::size_type typeEndPos = message.find(' ');
   string::size_type channelEndPos = message.find(' ', typeEndPos + 1);
-  string channelBuffer = message.substr(typeEndPos + 1, channelEndPos - typeEndPos - 1);
+  string channelBuffer =
+      message.substr(typeEndPos + 1, channelEndPos - typeEndPos - 1);
   string::size_type start = 0;
   string::size_type end;
   while ((end = channelBuffer.find(',', start)) != string::npos) {
@@ -74,6 +77,14 @@ bool joinParsing(string &message, vector<string> &channel, vector<string> &passw
   }
 
   vector<string>::iterator it;
+  return true;
+}
+
+bool inviteParsing(string &message, string &clientName, string &channelName) {
+  int endInvite = message.find(' ');
+  int endClientName = message.find(' ', endInvite + 1);
+  clientName = message.substr(endInvite + 1, endClientName - endInvite - 1);
+  channelName = message.substr(endClientName + 1);
   return true;
 }
 

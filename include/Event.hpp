@@ -16,6 +16,7 @@ private:
   void _managePING(Client &client);
   void _manageKICK(string &message, Client &client);
   void _manageJOIN(string &message, Client &client);
+  void _manageINVITE(string &message, Client &Client);
 };
 
 #endif
