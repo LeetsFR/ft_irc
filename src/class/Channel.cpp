@@ -20,6 +20,14 @@ Channel::~Channel() {}
 
 const string &Channel::getName() const { return _name; }
 
+const string &Channel::getTopic() const { return _topic; }
+
+const bool Channel::getInviteOnly() const { return _inviteOnly; }
+
+const bool Channel::getProtectedTopic() const { return _protectedTopic; }
+
+void Channel::modifyTopic(const string &topic) { _topic = topic; }
+
 bool Channel::clientIsOperator(Client &client) {
   map<Client, bool>::iterator it;
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
@@ -27,6 +35,10 @@ bool Channel::clientIsOperator(Client &client) {
       return it->second;
   }
   throw logic_error("Error: Don't find Client clientIsOperator()");
+}
+
+void Channel::addInvitedClient(const string &invitedClientName) {
+  _invitedClient.push_back(invitedClientName);
 }
 
 const string Channel::getUserList() const {
@@ -80,8 +92,7 @@ void Channel::joinChannel(const string &password, Client &client) {
     string msg = RPL_TOPIC(client.getNickname(), _name, _topic);
     sendRC(msg, client.getSocket());
   }
-  string msg =
-      RPL_NAMREPLY_AND_ENDOFNAMES(client.getNickname(), _name, getUserList());
+  string msg = RPL_NAMREPLY_AND_ENDOFNAMES(client.getNickname(), _name, getUserList());
   sendRC(msg, client.getSocket());
   _listClient.insert(make_pair(client, true));
   string joinMsg = ":" + client.getNickname() + " JOIN :" + _name;
@@ -104,6 +115,26 @@ void Channel::sendAllOtherClient(const string &message, int ignoredFd) const {
     if (it->first.getSocket() != ignoredFd)
       sendRC(message, it->first.getSocket());
   }
+}
+
+bool Channel::findClient(const int fd) const {
+  map<Client, bool>::const_iterator it;
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->first.getSocket() == fd)
+      return true;
+  }
+  return false;
+}
+
+const Client *Channel::findClient(const string &clientName) {
+  map<Client, bool>::iterator it;
+
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->first.getNickname() == clientName) {
+      return &it->first;
+    }
+  }
+  return NULL;
 }
 
 void Channel::sendAllClient(const string &message) const {

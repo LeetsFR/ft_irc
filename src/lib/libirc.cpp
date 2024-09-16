@@ -1,4 +1,6 @@
 #include "libirc.hpp"
+#include "IRC.hpp"
+#include <string>
 
 bool portIsValid(int port) {
   if (port == 6667)
@@ -36,8 +38,7 @@ void handleSigint(int sig) {
   cout << "\r";
 }
 
-bool kickParsing(string &message, string &channelName, string &kickUserName,
-                 string &reason) {
+bool kickParsing(string &message, string &channelName, string &kickUserName, string &reason) {
   int pos = message.find('#'); // a modifier les channel ne sont pas que des #
   int pos2 = message.find(' ', pos);
   int pos3 = message.find(' ', pos2 + 1);
@@ -48,12 +49,10 @@ bool kickParsing(string &message, string &channelName, string &kickUserName,
   return true;
 }
 
-bool joinParsing(string &message, vector<string> &channel,
-                 vector<string> &password) {
+bool joinParsing(string &message, vector<string> &channel, vector<string> &password) {
   string::size_type typeEndPos = message.find(' ');
   string::size_type channelEndPos = message.find(' ', typeEndPos + 1);
-  string channelBuffer =
-      message.substr(typeEndPos + 1, channelEndPos - typeEndPos - 1);
+  string channelBuffer = message.substr(typeEndPos + 1, channelEndPos - typeEndPos - 1);
   string::size_type start = 0;
   string::size_type end;
   while ((end = channelBuffer.find(',', start)) != string::npos) {
@@ -86,6 +85,19 @@ bool inviteParsing(string &message, string &clientName, string &channelName) {
   clientName = message.substr(endInvite + 1, endClientName - endInvite - 1);
   channelName = message.substr(endClientName + 1);
   return true;
+}
+
+bool topicParsing(string &message, string &channelName, string &topicName) {
+  int endTopic = message.find(' ');
+  int endChannelName = message.find(':', endTopic + 1);
+  if (endChannelName == string::npos) {
+    channelName = message.substr(endTopic + 1);
+    return false;
+  } else {
+    channelName = message.substr(endTopic + 1, endChannelName - endTopic - 1);
+    topicName = message.substr(endChannelName + 1);
+    return true;
+  }
 }
 
 bool getMessage(int fd, string &message) {
@@ -123,3 +135,23 @@ int convertIntSafe(const string &n) {
     throw logic_error("Error: out of range argument");
   return safe;
 }
+
+bool modeParamParsing(string &message, string &channelName, string &mode, string &param) {
+  int endType = message.find(' ');
+  int endChannel = message.find(' ', endType + 1);
+  int end = message.find(' ', endChannel + 1);
+  channelName = message.substr(endType + 1, endChannel - endType - 1);
+  mode = message.substr(endChannel + 1, end - endChannel - 1);
+  param = message.substr(end + 1);
+  return true;
+}
+
+bool modeParsing(string & message,string& channelName,string&mode )
+{
+  int endType = message.find(' ');
+  int endChannel = message.find(' ', endType + 1);
+  channelName = message.substr(endType + 1, endChannel - endType - 1);
+  mode = message.substr(endChannel + 1);
+  return true;
+}
+  

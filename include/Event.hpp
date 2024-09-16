@@ -4,6 +4,7 @@
 #include "Client.hpp"
 #include "IRC.hpp"
 #include "libirc.hpp"
+#include <locale>
 
 class Event {
 
@@ -17,6 +18,12 @@ private:
   void _manageKICK(string &message, Client &client);
   void _manageJOIN(string &message, Client &client);
   void _manageINVITE(string &message, Client &Client);
+  void _manageTOPIC(string &message, Client &client);
+  void _manageMode_I(string &message, Client &client);
+  void _manageMode_T(string &message, Client &client);
+  void _manageMode_K(string &message, Client &client);
+  void _manageMode_O(string &message, Client &client);
+  void _manageMode_L(string &message, Client &client);
 };
 
 #endif
