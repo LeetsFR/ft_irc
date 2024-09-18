@@ -11,6 +11,7 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
   case ERROR:
     break;
   case PRIVMSG:
+    _managePRIVMSG(message, client);
     break;
   case PING:
     _managePING(client);
@@ -19,7 +20,7 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
     _manageJOIN(message, client);
     break;
   case KICK:
-    _manageKICK(message, client); // a refaire
+    _manageKICK(message, client); // a refaire parsing
     break;
   case INVITE:
     _manageINVITE(message, client);
@@ -44,6 +45,41 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
     break;
   }
 }
+
+void Event::_managePRIVMSG(string &message, Client &client) {
+  string recipient;
+  string msgContent;
+
+  privmsgParsing(message, recipient, msgContent);
+
+  if (recipient[0] == '#') {
+    Channel *channel = _serv.findChannel(recipient);
+    if (channel == NULL) {
+      // Gérer l'erreur : canal inexistant
+      string errorMsg = ERR_NOSUCHCHANNEL(client.getNickname(), recipient);
+      send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+      return;
+    }
+
+    if (channel->findClient(client.getSocket()) == false) {
+      string errorMsg = ERR_CANNOTSENDTOCHAN(client.getNickname(), recipient);
+      send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+      return;
+    }
+
+    channel->sendAllClient(":" + client.getNickname() + " PRIVMSG " + recipient + " :" + msgContent + "\r\n");
+  } else {
+    Client *targetClient = _serv.findClient(recipient);
+    if (targetClient == NULL) {
+      string errorMsg = ERR_NOSUCHNICK(client.getNickname(), recipient);
+      send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+      return;
+    }
+    string fullMsg = ":" + client.getNickname() + " PRIVMSG " + recipient + " :" + msgContent + "\r\n";
+    send(targetClient->getSocket(), fullMsg.c_str(), fullMsg.size(), 0);
+  }
+}
+
 void Event::_managePING(Client &client) {
   string pongMessage = REP_PONG(client.getNickname());
   if (send(client.getSocket(), pongMessage.c_str(), pongMessage.size(), 0) == -1)
@@ -54,13 +90,30 @@ void Event::_manageKICK(string &message, Client &client) {
   string channelName, kickUserName, reason;
   kickParsing(message, channelName, kickUserName, reason);
   Channel *channel = _serv.findChannel(channelName);
-  if (channel->clientIsOperator(client) == false) {
-    cerr << printTime() << RED "Error: client is not operator he can't KICK" RESET << endl;
+  if (channel == NULL) {
+    string msg = ERR_NOSUCHCHANNEL(client.getNickname(), channelName);
+    sendRC(msg, client.getSocket());
     return;
   }
-  Client &kickUser = _serv.findClient(kickUserName);
-  channel->kickClient(kickUser);
-  channel->sendAllClient(message);
+  if (channel->clientIsOperator(client) == false) {
+    string msg = ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName);
+    sendRC(msg, client.getSocket());
+    return;
+  }
+  Client *kickUser = _serv.findClient(kickUserName);
+  if (kickUser == NULL) {
+    string msg = ERR_NOSUCHNICK(client.getNickname(), kickUserName);
+    sendRC(msg, client.getSocket());
+    return;
+  }
+  if (channel->findClient(kickUser->getSocket()) == false) {
+    string msg = ERR_USERNOTINCHANNEL(kickUserName, channelName);
+    sendRC(msg, client.getSocket());
+    return;
+  }
+  channel->kickClient(*kickUser);
+  string kickMsg = ":" + client.getNickname() + " KICK " + channelName + " " + kickUserName + " :" + reason + "\r\n";
+  channel->sendAllClient(kickMsg);
 }
 
 void Event::_manageTOPIC(string &message, Client &client) {
@@ -133,9 +186,8 @@ void Event::_manageINVITE(string &message, Client &client) {
     return;
   }
   const Client *invitedClient = channel->findClient(clientName);
-  if (invitedClient) {
-    string msg = ERR_USERONCHANNEL(invitedClient->getHostname(), invitedClient->getNickname(),
-                                   channel->getName());
+  if (invitedClient == NULL) {
+    string msg = ERR_USERONCHANNEL(invitedClient->getHostname(), invitedClient->getNickname(), channel->getName());
     sendRC(msg, client.getSocket());
     return;
   }
@@ -147,8 +199,7 @@ void Event::_manageINVITE(string &message, Client &client) {
     }
     channel->addInvitedClient(clientName);
   }
-  string msg = ":" + client.getHostname() + " 341 " + invitedClient->getNickname() + " " +
-               channel->getName() + "\r\n";
+  string msg = ":" + client.getHostname() + " 341 " + invitedClient->getNickname() + " " + channel->getName() + "\r\n";
   sendRC(msg, invitedClient->getSocket());
   return;
 }

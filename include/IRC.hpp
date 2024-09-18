@@ -22,7 +22,7 @@ public:
   void printAllChannel() const;
   bool findNickname(const string &);
   Client &findClient(int fd);
-  Client &findClient(const string &);
+  Client *findClient(const string &);
   Channel *findChannel(const string &name);
   void createChannel(const string &name, const string &password, Client &);
   void joinChannel(Channel *channel, const string &password, Client &);

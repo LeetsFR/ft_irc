@@ -100,6 +100,15 @@ bool topicParsing(string &message, string &channelName, string &topicName) {
   }
 }
 
+void privmsgParsing(const string &message, string &recipient, string &msgContent) {
+  size_t pos = message.find(' ');
+  string rest = message.substr(pos + 1);
+
+  pos = rest.find(' ');
+  recipient = rest.substr(0, pos);
+  msgContent = rest.substr(pos + 1);
+}
+
 bool getMessage(int fd, string &message) {
   char buffer[RECV_SIZE];
   int read_size = RECV_SIZE;
@@ -146,12 +155,10 @@ bool modeParamParsing(string &message, string &channelName, string &mode, string
   return true;
 }
 
-bool modeParsing(string & message,string& channelName,string&mode )
-{
+bool modeParsing(string &message, string &channelName, string &mode) {
   int endType = message.find(' ');
   int endChannel = message.find(' ', endType + 1);
   channelName = message.substr(endType + 1, endChannel - endType - 1);
   mode = message.substr(endChannel + 1);
   return true;
 }
-  

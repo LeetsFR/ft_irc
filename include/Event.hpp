@@ -14,6 +14,7 @@ public:
 
 private:
   IRC &_serv;
+  void _managePRIVMSG(string &message, Client &client);
   void _managePING(Client &client);
   void _manageKICK(string &message, Client &client);
   void _manageJOIN(string &message, Client &client);
