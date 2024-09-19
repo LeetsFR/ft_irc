@@ -1,6 +1,7 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "libirc.hpp"
+#include <vector>
 
 Channel::Channel(const string &name, const string &password, Client &client) : _name(name), _password(password) {
   _listClient.insert(make_pair(client, true));
@@ -35,6 +36,35 @@ bool Channel::clientIsOperator(Client &client) {
       return it->second;
   }
   throw logic_error("Error: Don't find Client clientIsOperator()");
+}
+
+void Channel::setInviteOnly(bool value) { _inviteOnly = value; }
+
+void Channel::setTopicOnlyOperator(bool value) { _topicOnlyOperator = value; }
+
+void Channel::setPassword(string &password) { password = _password; }
+
+void Channel::setUserLimit(int value) {
+  _limitClientMode = true;
+  _limitClient = value;
+}
+
+void Channel::removeUserLimit() { _limitClientMode = false; }
+
+void Channel::addOperator(Client &client) {
+  map<Client, bool>::iterator it;
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->first.getUniqId() == client.getUniqId())
+      it->second = true;
+  }
+}
+
+void Channel::removeOperator(Client &client) {
+  map<Client, bool>::iterator it;
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->first.getUniqId() == client.getUniqId())
+      it->second = false;
+  }
 }
 
 void Channel::addInvitedClient(const string &invitedClientName) { _invitedClient.push_back(invitedClientName); }

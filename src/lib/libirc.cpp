@@ -77,8 +77,8 @@ bool inviteParsing(string &message, string &clientName, string &channelName) {
 }
 
 bool topicParsing(string &message, string &channelName, string &topicName) {
-  int endTopic = message.find(' ');
-  int endChannelName = message.find(':', endTopic + 1);
+  size_t endTopic = message.find(' ');
+  size_t endChannelName = message.find(':', endTopic + 1);
   if (endChannelName == string::npos) {
     channelName = message.substr(endTopic + 1);
     return false;
@@ -122,7 +122,6 @@ bool kickParsing(const string &message, string &channelName, string &kickUserNam
 void privmsgParsing(const string &message, string &recipient, string &msgContent) {
   size_t pos = message.find(' ');
   string rest = message.substr(pos + 1);
-
   pos = rest.find(' ');
   recipient = rest.substr(0, pos);
   msgContent = rest.substr(pos + 1);

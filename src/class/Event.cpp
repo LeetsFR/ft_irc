@@ -380,11 +380,11 @@ void Event::_manageMode_L(string &message, Client &client) {
       return;
     }
     int limit = convertIntSafe(param.c_str());
-    if (limit <= 0) {
-      string msg = ERR_INVALIDLIMIT(client.getNickname(), channelName);
-      sendRC(msg, client.getSocket());
-      return;
-    }
+    // if (limit <= 0) {
+    //   string msg = ERR_INVALIDLIMIT(client.getNickname(), channelName);
+    //   sendRC(msg, client.getSocket());
+    //   return;
+    // }
     channel->setUserLimit(limit);
   } else if (mode[0] == '-') {
     channel->removeUserLimit();
