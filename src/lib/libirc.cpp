@@ -49,7 +49,6 @@ bool kickParsing(string &message, string &channelName, string &kickUserName, str
   return true;
 }
 
-<<<<<<< HEAD
 bool joinParsing(string &message, vector<string> &channel, vector<string> &password) {
   string::size_type typeEndPos = message.find(' ');
   string::size_type channelEndPos = message.find(' ', typeEndPos + 1);
@@ -109,8 +108,6 @@ void privmsgParsing(const string &message, string &recipient, string &msgContent
   recipient = rest.substr(0, pos);
   msgContent = rest.substr(pos + 1);
 }
-=======
->>>>>>> origin/scely
 
 bool getMessage(int fd, string &message) {
   char buffer[RECV_SIZE];

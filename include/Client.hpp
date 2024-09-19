@@ -17,20 +17,21 @@ public:
   const string &getIp() const;
   uint16_t getPort() const;
   const string &getNickname() const;
-  const string& getHostname() const;
+  const string &getHostname() const;
   const string &getUniqId() const;
   const string &getUser() const;
   void handleMessage(string, IRC &server);
 
   bool operator==(const Client &) const;
+  bool operator<(const Client &) const;
 
 private:
   void configMessage(string &, IRC &server);
   typeMsg receiveMessage(string &, IRC &server);
-  void sendMsgToClient(const std::string& message);
+  void sendMsgToClient(const std::string &message);
 
   bool correctNickFormat(string &);
-  
+
   typeMsg parsPrivmsg(string &, IRC &server);
   typeMsg parsJoin(string &);
   typeMsg parsPing(string &);
@@ -57,6 +58,6 @@ private:
   bool _prevMsgIncomplete;
 };
 
-std::ostream& operator<<(std::ostream& os, const Client& obj);
+std::ostream &operator<<(std::ostream &os, const Client &obj);
 
 #endif

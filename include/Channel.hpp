@@ -12,8 +12,8 @@ public:
   ~Channel();
 
   const string &getName() const;
-  const bool getInviteOnly() const;
-  const bool getProtectedTopic() const;
+  bool getInviteOnly() const;
+  bool getProtectedTopic() const;
   const string &getTopic() const;
   const string getUserList() const;
   void setInviteOnly(bool);
@@ -42,7 +42,7 @@ private:
   vector<string> _invitedClient;
   bool _topicOnlyOperator;
   map<Client, bool> _listClient;
-  vector<Client> _BannedClient;
+  // vector<Client> _BannedClient;
 };
 
 #endif

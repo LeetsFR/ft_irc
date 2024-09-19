@@ -31,6 +31,7 @@
 
 typedef enum {
   ERROR = -1,
+  IGNORE,
 
   PRIVMSG,
   PING,
@@ -56,7 +57,7 @@ typedef enum {
 
 #define RPL_TOPIC(client, channel, topic) client + " 332 " + channel + " :" + topic + "\r\n"
 
-#define REP_CAPEND(clientName) (string(":") + clientName + " 001 " + clientName + " :Welcome to the Internet Relay Network " + clientName "\r\n")
+#define REP_CAPEND(clientName) (string(":") + clientName + " 001 " + clientName + " :Welcome to the Internet Relay Network " + clientName + "\r\n")
 
 #define REP_PONG(serverName) (string("PONG ") + serverName + "\r\n")
 
@@ -97,6 +98,8 @@ typedef enum {
 #define ERR_CHANOPRIVSNEEDED(clientName, channel) (string(":") + clientName + " 482 " + channel + " :You're not channel operator\r\n")
 #define ERR_USERNOTINCHANNEL(clientName, nick, channel) (string(":") + clientName + " 441 " + nick + " " + channel + " :They aren't on that channel\r\n")
 #define ERR_NOTONCHANNEL(clientName, channel) (string(":") + clientName + " 442 " + channel + " :You're not on that channel\r\n")
+#define RPL_INVITING(client_nick, target_nick, channel_name)                                                                                                                                           \
+  (std::string(":") + client_nick + " 341 " + target_nick + " " + channel_name + " :You have invited " + target_nick + " to " + channel_name + "\r\n")
 #define ERR_USERONCHANNEL(clientName, nick, channel) (string(":") + clientName + " 443 " + nick + " " + channel + " :is already on channel\r\n")
 
 using namespace std;

@@ -17,8 +17,7 @@
 /*                              Constructeur et destructeur                           */
 /**************************************************************************************/
 
-Client::Client(int socket, sockaddr_in clientAdress, string ip)
-    : _socket(socket), _clientAdress(clientAdress), _ip(ip) {
+Client::Client(int socket, sockaddr_in clientAdress, string ip) : _socket(socket), _clientAdress(clientAdress), _ip(ip) {
   this->_badConfig = false;
   this->_isConnected = false;
   this->_isValidate = false;
@@ -33,13 +32,15 @@ Client::~Client() {
 /*                              Surcharge d'operateur                                 */
 /**************************************************************************************/
 
+
 bool Client::operator==(const Client &client) const { return (_uniqId == client.getUniqId()); }
 
-std::ostream& operator<<(std::ostream& os, const Client& obj)
-{
-    os << "NICK: " << obj.getNickname() << endl;
-    os << "USER: " << obj.getUser() << endl;
-    return os;
+bool Client::operator<(const Client &other) const { return this->_uniqId < other._uniqId; }
+
+std::ostream &operator<<(std::ostream &os, const Client &obj) {
+  os << "NICK: " << obj.getNickname() << endl;
+  os << "USER: " << obj.getUser() << endl;
+  return os;
 }
 
 /**************************************************************************************/
@@ -70,10 +71,9 @@ void Client::handleMessage(std::string message, IRC &server) {
     this->_prevMsgIncomplete = true;
   else
     this->_prevMsgIncomplete = false;
-  int i = this->_messageTmp.size() - this->_prevMsgIncomplete; 
- 
-  while (i-- > 0)
-  {
+  int i = this->_messageTmp.size() - this->_prevMsgIncomplete;
+
+  while (i-- > 0) {
     if (this->_isConnected == false)
       this->configMessage(this->_messageTmp[0], server);
     else
@@ -88,18 +88,16 @@ bool Client::correctNickFormat(std::string &nick) {
     return (false);
 
   for (size_t i = 0; i < nickSize; i++) {
-    if (!(std::isalnum(nick[i]) || (nick[i] >= '[' && nick[i] <= ']') ||
-          (nick[i] >= '{' && nick[i] <= '}')))
+    if (!(std::isalnum(nick[i]) || (nick[i] >= '[' && nick[i] <= ']') || (nick[i] >= '{' && nick[i] <= '}')))
       return (false);
   }
   return (true);
 }
 
-void Client::configMessage(std::string &message, IRC &server)
-{
+void Client::configMessage(std::string &message, IRC &server) {
   std::string tmp;
   if (!message.compare("CAP LS"))
-    return ;
+    return;
   if (this->_isValidate == false && !message.compare(0, 4, "PASS")) {
     cout << "\n***********config PASS***********\n";
     if (message.find(' ', 4) != std::string::npos)
@@ -115,8 +113,7 @@ void Client::configMessage(std::string &message, IRC &server)
     }
   }
 
-  if (this->_badConfig == false && !message.compare(0, 4, "NICK") &&
-      this->_nickname.size() == 0) {
+  if (this->_badConfig == false && !message.compare(0, 4, "NICK") && this->_nickname.size() == 0) {
     cout << "\n***********config NICK***********\n";
     if (message.find(' ', 4) != std::string::npos)
       tmp = message.substr(5);
@@ -137,8 +134,7 @@ void Client::configMessage(std::string &message, IRC &server)
     }
   }
 
-  if (this->_badConfig == false && this->_nickname.size() &&
-      !message.compare(0, 4, "USER")) {
+  if (this->_badConfig == false && this->_nickname.size() && !message.compare(0, 4, "USER")) {
     cout << "\n***********config USER***********\n";
     std::vector<string> userParam = ft_split(message, " ");
     if (userParam.size() < 5 || message.find(':') == std::string::npos) {
@@ -160,187 +156,156 @@ void Client::configMessage(std::string &message, IRC &server)
   }
 }
 
-void Client::sendMsgToClient(const std::string& message)
-{
+void Client::sendMsgToClient(const std::string &message) {
   if (send(this->_socket, message.c_str(), message.size(), 0) == -1)
-      cerr << RED "Error: fail to send message" RESET << endl;
+    cerr << RED "Error: fail to send message" RESET << endl;
   cout << message;
 }
 
-typeMsg Client::parsPrivmsg(string &message, IRC &server)
-{
+typeMsg Client::parsPrivmsg(string &message, IRC &server) {
   cout << "\n***********cmd PRIVMSG***********\n";
   std::vector<std::string> privmsgParam = ft_split(message, " ");
-  if (privmsgParam.size() < 3)
-  {
+  if (privmsgParam.size() < 3) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "PRIVMSG"));
-    return (ERROR);  
+    return (ERROR);
   }
   std::string currentToken;
   currentToken = privmsgParam[1];
-  if (currentToken[0] == '#' && server.doesChannelExist(currentToken) == false)
-  {
+  if (currentToken[0] == '#' && server.doesChannelExist(currentToken) == false) {
     sendMsgToClient(ERR_NOSUCHCHANNEL(this->_nickname, currentToken));
     return (ERROR);
-  } else if (currentToken[0] != '#' && server.doesNicknameExist(currentToken) == false)
-  {
+  } else if (currentToken[0] != '#' && server.doesNicknameExist(currentToken) == false) {
     sendMsgToClient(ERR_NOSUCHNICK(this->_nickname, currentToken));
     return (ERROR);
   }
   currentToken = privmsgParam[2];
   std::string text;
-  if(currentToken[0] == ':')
+  if (currentToken[0] == ':')
     text = message.substr(message.find(":") + 1);
   size_t i = 0;
   while (i < text.size() && (std::isspace(text[i]) || std::iscntrl(text[i])))
     ++i;
-  if (i == text.size())
-  {
+  if (i == text.size()) {
     sendMsgToClient(ERR_NOTEXTTOSEND(this->_nickname));
     return (ERROR);
   }
-  return (PRIVMSG); 
+  return (PRIVMSG);
 }
 
-typeMsg Client::parsPing(std::string &message)
-{
+typeMsg Client::parsPing(std::string &message) {
   cout << "\n***********cmd PING***********\n";
   std::vector<std::string> pingParam = ft_split(message, " ");
-  if (pingParam.size() < 2)
-  {
+  if (pingParam.size() < 2) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "PING"));
-    return (ERROR); 
+    return (ERROR);
   }
   return (PING);
 }
 
-typeMsg Client::parsInvite(std::string &message, IRC &server)
-{
+typeMsg Client::parsInvite(std::string &message, IRC &server) {
   cout << "\n***********cmd INVITE***********\n";
   std::vector<std::string> inviteParam = ft_split(message, " ");
-  if (inviteParam.size() < 3)
-  {
+  if (inviteParam.size() < 3) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "INVITE"));
     return (ERROR);
   }
   std::string inviteToken = inviteParam[1];
-  if (server.doesNicknameExist(inviteToken) == false)
-  {
+  if (server.doesNicknameExist(inviteToken) == false) {
     sendMsgToClient(ERR_NOSUCHNICK(this->_nickname, inviteToken));
-    return (ERROR); 
+    return (ERROR);
   }
   inviteToken = inviteParam[2];
-  if (server.doesChannelExist(inviteToken) == false)
-  {
+  if (server.doesChannelExist(inviteToken) == false) {
     sendMsgToClient(ERR_NOSUCHCHANNEL(this->_nickname, inviteToken));
     return (ERROR);
   }
   return (INVITE);
 }
 
-typeMsg Client::parsTopic(std::string &message, IRC &server)
-{
+typeMsg Client::parsTopic(std::string &message, IRC &server) {
   cout << "\n***********cmd TOPIC***********\n";
   std::vector<std::string> topicParam = ft_split(message, " ");
-  if (topicParam.size() < 2)
-  {
+  if (topicParam.size() < 2) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "TOPIC"));
     return (ERROR);
   }
   std::string topicToken = topicParam[1];
-  if (server.doesChannelExist(topicToken) == false)
-  {
+  if (server.doesChannelExist(topicToken) == false) {
     sendMsgToClient(ERR_NOSUCHCHANNEL(this->_nickname, topicToken));
     return (ERROR);
   }
   return (TOPIC);
 }
 
-typeMsg Client::parsKick(std::string &message, IRC &server)
-{
+typeMsg Client::parsKick(std::string &message, IRC &server) {
   cout << "\n***********cmd KICK***********\n";
   std::vector<std::string> kickParam = ft_split(message, " ");
-  if (kickParam.size() < 3)
-  {
+  if (kickParam.size() < 3) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "KICK"));
     return (ERROR);
   }
   std::string kickToken = kickParam[1];
-  if (server.doesChannelExist(kickToken) == false)
-  {
+  if (server.doesChannelExist(kickToken) == false) {
     sendMsgToClient(ERR_NOSUCHCHANNEL(this->_nickname, kickToken));
     return (ERROR);
   }
   kickToken = kickParam[2];
-  if (server.doesNicknameExist(kickToken) == false)
-  {
+  if (server.doesNicknameExist(kickToken) == false) {
     sendMsgToClient(ERR_NOSUCHNICK(this->_nickname, kickToken));
     return (ERROR);
   }
   return (KICK);
 }
 
-typeMsg Client::parsMode(string &message, IRC &server)
-{
+typeMsg Client::parsMode(string &message, IRC &server) {
   cout << "\n***********cmd MODE***********\n";
   if (message == ("MODE " + this->_nickname + " +i"))
     return (IGNORE);
   std::vector<std::string> modeParam = ft_split(message, " ");
   std::string modeToken;
   size_t nbParam = modeParam.size();
-  
+
   modeToken = modeParam[1];
-  if (server.doesChannelExist(modeToken) == false)
-  {
+  if (server.doesChannelExist(modeToken) == false) {
     sendMsgToClient(ERR_NOSUCHCHANNEL(this->_nickname, modeToken));
     return (ERROR);
   }
   modeToken = modeParam[2];
-  if ((modeToken[0] != '-' && modeToken[0] != '+') || modeToken.size() != 2)
-  {
+  if ((modeToken[0] != '-' && modeToken[0] != '+') || modeToken.size() != 2) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "MODE"));
-  }
-  else if (modeToken[1] == 'i')
-    return (MODE_i);
+  } else if (modeToken[1] == 'i')
+    return (MODE_I);
   else if (modeToken[1] == 't')
-    return (MODE_t);
-  else if (modeToken[1] == 'k')
-  {
+    return (MODE_T);
+  else if (modeToken[1] == 'k') {
     if (modeToken[0] == '-' || nbParam == 4)
-      return (MODE_k);
+      return (MODE_K);
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "MODE"));
-  }
-  else if (modeToken[1] == 'o')
-  {
+  } else if (modeToken[1] == 'o') {
     if (nbParam == 4)
-      return (MODE_o);
+      return (MODE_O);
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "MODE"));
-  }
-  else if (modeToken[1] == 'l')
-  {
+  } else if (modeToken[1] == 'l') {
     if (modeToken[0] == '-' || nbParam == 4)
-      return (MODE_l);
+      return (MODE_L);
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "MODE"));
   }
   return (ERROR);
 }
 
-typeMsg Client::parsJoin(string &message)
-{
+typeMsg Client::parsJoin(string &message) {
   cout << "\n***********cmd JOIN***********\n";
   std::vector<std::string> joinParam = ft_split(message, " ");
   std::string errorMsg;
 
-  if (joinParam.size() < 2)
-  {
+  if (joinParam.size() < 2) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "JOIN"));
     return (ERROR);
   }
   return (JOIN);
 }
 
-typeMsg Client::receiveMessage(std::string &message, IRC &server)
-{
+typeMsg Client::receiveMessage(std::string &message, IRC &server) {
   std::vector<std::string> cmdToken = ft_split(message, " ");
   if (cmdToken.size() < 2)
     return (ERROR);

@@ -17,7 +17,7 @@ SRCS         := $(SRC_DIR)/main.cpp $(CLASS_DIR)/IRC.cpp $(CLASS_DIR)/Client.cpp
 INCLUDE      := include
 OBJS         := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-CFLAGS       := -Wall -Wextra -Werror -std=c++98 -g3 -O0
+CFLAGS       := -Wall -Wextra -Werror -std=c++98  -O3
 CCFLAGS      := -I $(INCLUDE)
 CC           = g++
 

@@ -2,13 +2,13 @@
 #include "Client.hpp"
 #include "libirc.hpp"
 
-Channel::Channel(const string &name, const string &password, Client &client)
-    : _name(name), _password(password) {
+Channel::Channel(const string &name, const string &password, Client &client) : _name(name), _password(password) {
   _listClient.insert(make_pair(client, true));
   string err = RPL_NOTOPIC(client.getNickname(), _name);
   if (send(client.getSocket(), err.c_str(), err.size(), 0) == -1)
     cerr << printTime() << RED "Error: fail to send message" RESET << endl;
   _topic = "";
+  _protectedTopic = false;
   _limitClient = 0;
   _actualNbrClient = 0;
   _limitClientMode = false;
@@ -22,9 +22,9 @@ const string &Channel::getName() const { return _name; }
 
 const string &Channel::getTopic() const { return _topic; }
 
-const bool Channel::getInviteOnly() const { return _inviteOnly; }
+bool Channel::getInviteOnly() const { return _inviteOnly; }
 
-const bool Channel::getProtectedTopic() const { return _protectedTopic; }
+bool Channel::getProtectedTopic() const { return _protectedTopic; }
 
 void Channel::modifyTopic(const string &topic) { _topic = topic; }
 
@@ -37,9 +37,7 @@ bool Channel::clientIsOperator(Client &client) {
   throw logic_error("Error: Don't find Client clientIsOperator()");
 }
 
-void Channel::addInvitedClient(const string &invitedClientName) {
-  _invitedClient.push_back(invitedClientName);
-}
+void Channel::addInvitedClient(const string &invitedClientName) { _invitedClient.push_back(invitedClientName); }
 
 const string Channel::getUserList() const {
   string userlist;
@@ -49,7 +47,8 @@ const string Channel::getUserList() const {
     if (it->second == true)
       userlist.append("@");
     userlist.append(it->first.getNickname());
-    if (std::next(it) != _listClient.end())
+    ++it;
+    if (it != _listClient.end())
       userlist.append(" ");
   }
   return userlist;

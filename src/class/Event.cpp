@@ -4,6 +4,7 @@
 #include "IRC.hpp"
 #include "libirc.hpp"
 #include <csignal>
+#include <unistd.h>
 
 Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(serv) {
 
@@ -108,7 +109,7 @@ void Event::_manageKICK(string &message, Client &client) {
     return;
   }
   if (channel->findClient(kickUser->getSocket()) == false) {
-    string msg = ERR_USERNOTINCHANNEL(kickUserName, channelName);
+    string msg = ERR_USERNOTINCHANNEL(kickUser->getHostname(), kickUserName, channelName);
     sendRC(msg, client.getSocket());
     return;
   }
@@ -171,38 +172,50 @@ void Event::_manageJOIN(string &message, Client &client) {
     ++jt;
   }
 }
-
 void Event::_manageINVITE(string &message, Client &client) {
   string clientName, channelName;
   inviteParsing(message, clientName, channelName);
+
   Channel *channel = _serv.findChannel(channelName);
   if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(clientName, channelName);
+    string msg = ERR_NOSUCHCHANNEL(client.getNickname(), channelName);
     sendRC(msg, client.getSocket());
     return;
   }
-  if (channel->findClient(client.getSocket()) == false) {
-    string msg = ERR_NOTONCHANNEL(clientName, channelName);
+
+  if (!channel->findClient(client.getSocket())) {
+    string msg = ERR_NOTONCHANNEL(client.getNickname(), channelName);
     sendRC(msg, client.getSocket());
     return;
   }
-  const Client *invitedClient = channel->findClient(clientName);
+
+  Client *invitedClient = _serv.findClient(clientName);
   if (invitedClient == NULL) {
-    string msg = ERR_USERONCHANNEL(invitedClient->getHostname(), invitedClient->getNickname(), channel->getName());
+    string msg = ERR_NOSUCHNICK(client.getNickname(), clientName);
     sendRC(msg, client.getSocket());
     return;
   }
-  if (channel->getInviteOnly() == true) {
-    if (channel->clientIsOperator(client) == false) {
-      string msg = ERR_CHANOPRIVSNEEDED(client.getHostname(), channelName);
+
+  if (channel->findClient(invitedClient->getSocket())) {
+    string msg = ERR_USERONCHANNEL(client.getNickname(), clientName, channelName);
+    sendRC(msg, client.getSocket());
+    return;
+  }
+
+  if (channel->getInviteOnly()) {
+    if (!channel->clientIsOperator(client)) {
+      string msg = ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName);
       sendRC(msg, client.getSocket());
       return;
     }
-    channel->addInvitedClient(clientName);
+    channel->addInvitedClient(invitedClient->getNickname());
   }
-  string msg = ":" + client.getHostname() + " 341 " + invitedClient->getNickname() + " " + channel->getName() + "\r\n";
-  sendRC(msg, invitedClient->getSocket());
-  return;
+
+  string msg = RPL_INVITING(client.getNickname(), invitedClient->getNickname(), channelName);
+  sendRC(msg, client.getSocket());
+
+  string inviteMsg = ":" + client.getNickname() + " INVITE " + invitedClient->getNickname() + " :" + channelName + "\r\n";
+  sendRC(inviteMsg, invitedClient->getSocket());
 }
 
 void Event::_manageMode_I(string &message, Client &client) {
@@ -210,7 +223,7 @@ void Event::_manageMode_I(string &message, Client &client) {
   modeParsing(message, channelName, mode);
   Channel *channel = _serv.findChannel(channelName);
   if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channel->getName());
+    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
     sendRC(msg, client.getSocket());
     return;
   }
@@ -235,7 +248,7 @@ void Event::_manageMode_T(string &message, Client &client) {
   modeParsing(message, channelName, mode);
   Channel *channel = _serv.findChannel(channelName);
   if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channel->getName());
+    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
     sendRC(msg, client.getSocket());
     return;
   }
@@ -260,7 +273,7 @@ void Event::_manageMode_K(string &message, Client &client) {
   modeParamParsing(message, channelName, mode, param);
   Channel *channel = _serv.findChannel(channelName);
   if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channel->getName());
+    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
     sendRC(msg, client.getSocket());
     return;
   }
@@ -287,7 +300,7 @@ void Event::_manageMode_O(string &message, Client &client) {
   modeParamParsing(message, channelName, mode, param);
   Channel *channel = _serv.findChannel(channelName);
   if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channel->getName());
+    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
     sendRC(msg, client.getSocket());
     return;
   }
