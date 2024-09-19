@@ -5,7 +5,7 @@ COLOR_YELLOW = \033[93m
 COLOR_BOLD   = \033[1m
 MAKEFLAGS    += --no-print-directory
 
-NAME         := server_irc
+NAME         := ircserv
 
 SRC_DIR      := src
 OBJ_DIR      := obj
@@ -17,9 +17,9 @@ SRCS         := $(SRC_DIR)/main.cpp $(CLASS_DIR)/IRC.cpp $(CLASS_DIR)/Client.cpp
 INCLUDE      := include
 OBJS         := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-CFLAGS       := -Wall -Wextra -Werror -std=c++98
+CFLAGS       := -Wall -Wextra -Werror -std=c++98 -g3 -O0
 CCFLAGS      := -I $(INCLUDE)
-CC           = c++
+CC           = g++
 
 RM           := rm -rf
 DIR_DUP      = mkdir -p $(@D)

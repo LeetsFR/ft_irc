@@ -43,6 +43,8 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
   case MODE_L:
     _manageMode_L(message, client);
     break;
+  default:
+    break;
   }
 }
 
@@ -55,7 +57,6 @@ void Event::_managePRIVMSG(string &message, Client &client) {
   if (recipient[0] == '#') {
     Channel *channel = _serv.findChannel(recipient);
     if (channel == NULL) {
-      // Gérer l'erreur : canal inexistant
       string errorMsg = ERR_NOSUCHCHANNEL(client.getNickname(), recipient);
       send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
       return;

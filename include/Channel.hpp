@@ -42,6 +42,7 @@ private:
   vector<string> _invitedClient;
   bool _topicOnlyOperator;
   map<Client, bool> _listClient;
+  vector<Client> _BannedClient;
 };
 
 #endif

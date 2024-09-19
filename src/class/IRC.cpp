@@ -58,7 +58,26 @@ bool IRC::findNickname(const string &nickname) {
     if (it->getNickname() == nickname)
       return true;
   }
-  cerr << printTime() << RED "Error: Nickname not found" << RESET << endl;
+  return (false);
+}
+
+bool IRC::doesNicknameExist(const string &nickname) {
+  vector<Client>::iterator it;
+
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->getNickname() == nickname)
+      return true;
+  }
+  return (false);
+}
+
+bool IRC::doesChannelExist(const string &channel) {
+  vector<Channel>::iterator it;
+
+  for (it = _listChannel.begin(); it != _listChannel.end(); ++it) {
+    if (it->getName() == channel)
+      return true;
+  }
   return (false);
 }
 

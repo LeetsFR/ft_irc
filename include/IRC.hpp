@@ -21,6 +21,8 @@ public:
   void printAllClient() const;
   void printAllChannel() const;
   bool findNickname(const string &);
+  bool doesChannelExist(const string &);
+  bool doesNicknameExist(const string &);
   Client &findClient(int fd);
   Client *findClient(const string &);
   Channel *findChannel(const string &name);
