@@ -19,6 +19,10 @@ public:
   void setInviteOnly(bool);
   void setTopicOnlyOperator(bool);
   void setPassword(string &);
+  void setUserLimit(int);
+  void removeUserLimit();
+  void addOperator(Client &);
+  void removeOperator(Client &);
   void addInvitedClient(const string &);
   void modifyTopic(const string &topic);
   void joinChannel(const string &password, Client &client);

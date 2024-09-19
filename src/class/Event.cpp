@@ -50,34 +50,34 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
 }
 
 void Event::_managePRIVMSG(string &message, Client &client) {
-  string recipient;
+  string channelName;
   string msgContent;
 
-  privmsgParsing(message, recipient, msgContent);
+  privmsgParsing(message, channelName, msgContent);
 
-  if (recipient[0] == '#') {
-    Channel *channel = _serv.findChannel(recipient);
+  if (channelName[0] == '#' || channelName[0] == '&') {
+    Channel *channel = _serv.findChannel(channelName);
     if (channel == NULL) {
-      string errorMsg = ERR_NOSUCHCHANNEL(client.getNickname(), recipient);
+      string errorMsg = ERR_NOSUCHCHANNEL(client.getNickname(), channelName);
       send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
       return;
     }
 
     if (channel->findClient(client.getSocket()) == false) {
-      string errorMsg = ERR_CANNOTSENDTOCHAN(client.getNickname(), recipient);
+      string errorMsg = ERR_CANNOTSENDTOCHAN(client.getNickname(), channelName);
       send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
       return;
     }
 
-    channel->sendAllClient(":" + client.getNickname() + " PRIVMSG " + recipient + " :" + msgContent + "\r\n");
+    channel->sendAllClient(":" + client.getNickname() + " PRIVMSG " + channelName + " :" + msgContent + "\r\n");
   } else {
-    Client *targetClient = _serv.findClient(recipient);
+    Client *targetClient = _serv.findClient(channelName);
     if (targetClient == NULL) {
-      string errorMsg = ERR_NOSUCHNICK(client.getNickname(), recipient);
+      string errorMsg = ERR_NOSUCHNICK(client.getNickname(), channelName);
       send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
       return;
     }
-    string fullMsg = ":" + client.getNickname() + " PRIVMSG " + recipient + " :" + msgContent + "\r\n";
+    string fullMsg = ":" + client.getNickname() + " PRIVMSG " + channelName + " :" + msgContent + "\r\n";
     send(targetClient->getSocket(), fullMsg.c_str(), fullMsg.size(), 0);
   }
 }
@@ -295,29 +295,101 @@ void Event::_manageMode_K(string &message, Client &client) {
   }
 }
 
-void Event::_manageMode_O(string &message, Client &client) {
-  string channelName, mode, param;
-  modeParamParsing(message, channelName, mode, param);
+void Event::_manageMode_O(std::string &message, Client &client) {
+  std::string channelName, mode, targetNick;
+  modeParamParsing(message, channelName, mode, targetNick);
+
   Channel *channel = _serv.findChannel(channelName);
   if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
+    std::string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
+    sendRC(msg, client.getSocket());
+    return;
+  }
+
+  if (channel->findClient(client.getSocket()) == false) {
+    std::string msg = ERR_NOTONCHANNEL(client.getHostname(), channelName);
+    sendRC(msg, client.getSocket());
+    return;
+  }
+
+  if (channel->clientIsOperator(client) == false) {
+    std::string msg = ERR_CHANOPRIVSNEEDED(client.getHostname(), channelName);
+    sendRC(msg, client.getSocket());
+    return;
+  }
+
+  Client *targetClient = _serv.findClient(targetNick);
+  if (targetClient == NULL) {
+    std::string msg = ERR_NOSUCHNICK(client.getNickname(), targetNick);
+    sendRC(msg, client.getSocket());
+    return;
+  }
+
+  if (channel->findClient(targetClient->getSocket()) == false) {
+    std::string msg = ERR_USERNOTINCHANNEL(client.getNickname(), targetNick, channelName);
+    sendRC(msg, client.getSocket());
+    return;
+  }
+  if (mode[0] == '+') {
+    if (channel->clientIsOperator(*targetClient)) {
+      std::string msg = ERR_USERONCHANNEL(client.getNickname(), targetNick, channelName);
+      sendRC(msg, client.getSocket());
+      return;
+    }
+    channel->addOperator(*targetClient);
+    std::string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " +o " + targetNick + "\r\n";
+    channel->sendAllClient(modeMsg);
+
+  } else if (mode[0] == '-') {
+    if (channel->clientIsOperator(*targetClient) == false) {
+      std::string msg = ERR_USERNOTINCHANNEL(client.getNickname(), targetNick, channelName);
+      sendRC(msg, client.getSocket());
+      return;
+    }
+    channel->removeOperator(*targetClient);
+    std::string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " -o " + targetNick + "\r\n";
+    channel->sendAllClient(modeMsg);
+  }
+}
+
+void Event::_manageMode_L(string &message, Client &client) {
+  string channelName, mode, param;
+  modeParamParsing(message, channelName, mode, param);
+
+  Channel *channel = _serv.findChannel(channelName);
+  if (channel == NULL) {
+    string msg = ERR_NOSUCHCHANNEL(client.getNickname(), channelName);
     sendRC(msg, client.getSocket());
     return;
   }
   if (channel->findClient(client.getSocket()) == false) {
-    string msg = ERR_NOTONCHANNEL(client.getHostname(), channel->getName());
+    string msg = ERR_NOTONCHANNEL(client.getNickname(), channelName);
     sendRC(msg, client.getSocket());
     return;
   }
   if (channel->clientIsOperator(client) == false) {
-    string msg = ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName());
+    string msg = ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName);
     sendRC(msg, client.getSocket());
     return;
   }
-  if (mode[0] == '+')
-    channel->setPassword(param);
-  else if (mode[0] == '-') {
-    string tmp = "";
-    channel->setPassword(tmp);
+
+  if (mode[0] == '+') {
+    if (param.empty()) {
+      string msg = ERR_NEEDMOREPARAMS(client.getNickname(), "MODE");
+      sendRC(msg, client.getSocket());
+      return;
+    }
+    int limit = convertIntSafe(param.c_str());
+    if (limit <= 0) {
+      string msg = ERR_INVALIDLIMIT(client.getNickname(), channelName);
+      sendRC(msg, client.getSocket());
+      return;
+    }
+    channel->setUserLimit(limit);
+  } else if (mode[0] == '-') {
+    channel->removeUserLimit();
   }
+
+  string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
+  channel->sendAllClient(modeMsg);
 }

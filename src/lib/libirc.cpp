@@ -38,17 +38,6 @@ void handleSigint(int sig) {
   cout << "\r";
 }
 
-bool kickParsing(string &message, string &channelName, string &kickUserName, string &reason) {
-  int pos = message.find('#'); // a modifier les channel ne sont pas que des #
-  int pos2 = message.find(' ', pos);
-  int pos3 = message.find(' ', pos2 + 1);
-
-  channelName = message.substr(pos, pos2 - pos);
-  kickUserName = message.substr(pos2 + 1, pos3 - pos2 - 1);
-  reason = message.substr(pos3 + 2);
-  return true;
-}
-
 bool joinParsing(string &message, vector<string> &channel, vector<string> &password) {
   string::size_type typeEndPos = message.find(' ');
   string::size_type channelEndPos = message.find(' ', typeEndPos + 1);
@@ -100,6 +89,36 @@ bool topicParsing(string &message, string &channelName, string &topicName) {
   }
 }
 
+bool kickParsing(const string &message, string &channelName, string &kickUserName, string &reason) {
+  size_t pos = message.find(' ');
+  if (pos == string::npos)
+    return false;
+
+  size_t pos2 = message.find(' ', pos + 1);
+  if (pos2 == string::npos)
+    return false;
+
+  size_t pos3 = message.find(' ', pos2 + 1);
+  if (pos3 == string::npos) {
+    pos3 = message.length();
+  }
+
+  channelName = message.substr(pos + 1, pos2 - pos - 1);
+  kickUserName = message.substr(pos2 + 1, pos3 - pos2 - 1);
+
+  if (pos3 < message.length()) {
+    size_t reasonStart = pos3 + 1;
+    if (message[reasonStart] == ':') {
+      reasonStart += 1;
+    }
+    reason = message.substr(reasonStart);
+  } else {
+    reason = "";
+  }
+
+  return true;
+}
+
 void privmsgParsing(const string &message, string &recipient, string &msgContent) {
   size_t pos = message.find(' ');
   string rest = message.substr(pos + 1);
@@ -123,7 +142,6 @@ bool getMessage(int fd, string &message) {
   }
   return true;
 }
-
 
 string printTime() {
   time_t rawtime;
