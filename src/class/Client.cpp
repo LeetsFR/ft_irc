@@ -6,7 +6,7 @@
 /*   By: scely <scely@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/30 19:49:17 by scely             #+#    #+#             */
-/*   Updated: 2024/09/14 14:20:35 by scely            ###   ########.fr       */
+/*   Updated: 2024/09/20 11:05:56 by scely            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ const string &Client::getUniqId() const { return (this->_uniqId); }
 
 const string &Client::getUser() const { return (this->_username); }
 
-void Client::handleMessage(std::string message, IRC &server) {
+bool Client::handleMessage(std::string message, IRC &server) {
 
   if (this->_prevMsgIncomplete == true)
     message.insert(0, this->_messageTmp[0]);
@@ -74,12 +74,22 @@ void Client::handleMessage(std::string message, IRC &server) {
   int i = this->_messageTmp.size() - this->_prevMsgIncomplete;
 
   while (i-- > 0) {
-    if (this->_isConnected == false)
+    if (this->_badConfig == true)
+    {
+      this->_messageTmp.clear();
+      return (false);
+    }
+    else if (this->_isConnected == false)
       this->configMessage(this->_messageTmp[0], server);
     else
-      this->receiveMessage(this->_messageTmp[0], server);
+    {
+      typeMsg type = this->receiveMessage(this->_messageTmp[0], server);
+      cout << "\n-----------End TOPIC-----------\n";
+      Event action(this->_messageTmp[0], *this, type, server);
+    }
     this->_messageTmp.erase(this->_messageTmp.begin());
   }
+  return (true);
 }
 
 bool Client::correctNickFormat(std::string &nick) {
@@ -163,7 +173,7 @@ void Client::sendMsgToClient(const std::string &message) {
 }
 
 typeMsg Client::parsPrivmsg(string &message, IRC &server) {
-  cout << "\n***********cmd PRIVMSG***********\n";
+  cout << "\n***********Pars PRIVMSG***********\n";
   std::vector<std::string> privmsgParam = ft_split(message, " ");
   if (privmsgParam.size() < 3) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "PRIVMSG"));
@@ -193,7 +203,7 @@ typeMsg Client::parsPrivmsg(string &message, IRC &server) {
 }
 
 typeMsg Client::parsPing(std::string &message) {
-  cout << "\n***********cmd PING***********\n";
+  cout << "\n***********Pars PING***********\n";
   std::vector<std::string> pingParam = ft_split(message, " ");
   if (pingParam.size() < 2) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "PING"));
@@ -203,7 +213,7 @@ typeMsg Client::parsPing(std::string &message) {
 }
 
 typeMsg Client::parsInvite(std::string &message, IRC &server) {
-  cout << "\n***********cmd INVITE***********\n";
+  cout << "\n***********Pars INVITE***********\n";
   std::vector<std::string> inviteParam = ft_split(message, " ");
   if (inviteParam.size() < 3) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "INVITE"));
@@ -223,7 +233,7 @@ typeMsg Client::parsInvite(std::string &message, IRC &server) {
 }
 
 typeMsg Client::parsTopic(std::string &message, IRC &server) {
-  cout << "\n***********cmd TOPIC***********\n";
+  cout << "\n***********Pars TOPIC***********\n";
   std::vector<std::string> topicParam = ft_split(message, " ");
   if (topicParam.size() < 2) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "TOPIC"));
@@ -238,7 +248,7 @@ typeMsg Client::parsTopic(std::string &message, IRC &server) {
 }
 
 typeMsg Client::parsKick(std::string &message, IRC &server) {
-  cout << "\n***********cmd KICK***********\n";
+  cout << "\n***********Pars KICK***********\n";
   std::vector<std::string> kickParam = ft_split(message, " ");
   if (kickParam.size() < 3) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "KICK"));
@@ -258,7 +268,7 @@ typeMsg Client::parsKick(std::string &message, IRC &server) {
 }
 
 typeMsg Client::parsMode(string &message, IRC &server) {
-  cout << "\n***********cmd MODE***********\n";
+  cout << "\n***********Pars MODE***********\n";
   if (message == ("MODE " + this->_nickname + " +i"))
     return (IGNORE);
   std::vector<std::string> modeParam = ft_split(message, " ");
@@ -294,7 +304,7 @@ typeMsg Client::parsMode(string &message, IRC &server) {
 }
 
 typeMsg Client::parsJoin(string &message) {
-  cout << "\n***********cmd JOIN***********\n";
+  cout << "\n***********Pars JOIN***********\n";
   std::vector<std::string> joinParam = ft_split(message, " ");
   std::string errorMsg;
 

@@ -75,6 +75,7 @@ bool IRC::doesChannelExist(const string &channel) {
   vector<Channel>::iterator it;
 
   for (it = _listChannel.begin(); it != _listChannel.end(); ++it) {
+    // cout << "GetName " + it->getName() << " channel " << channel << endl;
     if (it->getName() == channel)
       return true;
   }
@@ -155,7 +156,11 @@ void IRC::_getEventClient(int fd) {
   }
   cout << printTime() << message << endl;
   Client &client = findClient(fd);
-  client.handleMessage(message, *this);
+  if (client.handleMessage(message, *this) == false)
+  {
+    removeClient(fd);
+    return;
+  }
 }
 
 void IRC::_waitEvent() {

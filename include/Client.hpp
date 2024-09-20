@@ -2,6 +2,7 @@
 #define __CLIENT__
 
 #include "libirc.hpp"
+#include "Event.hpp"
 
 #define MAX_CLIENT_NAME 9
 
@@ -20,7 +21,7 @@ public:
   const string &getHostname() const;
   const string &getUniqId() const;
   const string &getUser() const;
-  void handleMessage(string, IRC &server);
+  bool handleMessage(string, IRC &server);
 
   bool operator==(const Client &) const;
   bool operator<(const Client &) const;

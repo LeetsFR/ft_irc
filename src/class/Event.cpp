@@ -49,6 +49,10 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
   }
 }
 
+Event::~Event()
+{
+}
+
 void Event::_managePRIVMSG(string &message, Client &client) {
   string channelName;
   string msgContent;
@@ -122,6 +126,7 @@ void Event::_manageTOPIC(string &message, Client &client) {
   string channelName, topic, msg;
   bool isTopicIsChanged = topicParsing(message, channelName, topic);
   Channel *channel = _serv.findChannel(channelName);
+  cout << "\n***********Manage TOPIC***********\n";
   if (channel == NULL) {
     msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
     sendRC(msg, client.getSocket());
