@@ -4,6 +4,7 @@
 #include "IRC.hpp"
 #include "libirc.hpp"
 #include <csignal>
+#include <sys/socket.h>
 #include <unistd.h>
 
 Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(serv) {
@@ -21,7 +22,7 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
     _manageJOIN(message, client);
     break;
   case KICK:
-    _manageKICK(message, client); // a refaire parsing
+    _manageKICK(message, client);
     break;
   case INVITE:
     _manageINVITE(message, client);
@@ -49,40 +50,41 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
   }
 }
 
-Event::~Event()
-{
-}
-
+Event::~Event() {}
 void Event::_managePRIVMSG(string &message, Client &client) {
-  string channelName;
+  string targetName;
   string msgContent;
 
-  privmsgParsing(message, channelName, msgContent);
+  privmsgParsing(message, targetName, msgContent);
 
-  if (channelName[0] == '#' || channelName[0] == '&') {
-    Channel *channel = _serv.findChannel(channelName);
+  if (targetName.empty() == false && (targetName[0] == '#' || targetName[0] == '&')) {
+    Channel *channel = _serv.findChannel(targetName);
     if (channel == NULL) {
-      string errorMsg = ERR_NOSUCHCHANNEL(client.getNickname(), channelName);
+      string errorMsg = ERR_NOSUCHCHANNEL(client.getNickname(), targetName);
       send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
       return;
     }
 
     if (channel->findClient(client.getSocket()) == false) {
-      string errorMsg = ERR_CANNOTSENDTOCHAN(client.getNickname(), channelName);
+      string errorMsg = ERR_CANNOTSENDTOCHAN(client.getNickname(), targetName);
       send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
       return;
     }
 
-    channel->sendAllClient(":" + client.getNickname() + " PRIVMSG " + channelName + " :" + msgContent + "\r\n");
+    string fullMsg = ":" + client.getNickname() + "!" + client.getUser() + "@" + client.getHostname() + " PRIVMSG " + targetName + " :" + msgContent + "\r\n";
+    channel->sendAllClient(fullMsg);
   } else {
-    Client *targetClient = _serv.findClient(channelName);
+    Client *targetClient = _serv.findClient(targetName);
     if (targetClient == NULL) {
-      string errorMsg = ERR_NOSUCHNICK(client.getNickname(), channelName);
+      string errorMsg = ERR_NOSUCHNICK(client.getNickname(), targetName);
       send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
       return;
     }
-    string fullMsg = ":" + client.getNickname() + " PRIVMSG " + channelName + " :" + msgContent + "\r\n";
-    send(targetClient->getSocket(), fullMsg.c_str(), fullMsg.size(), 0);
+    if (targetClient->getSocket() != client.getSocket()) {
+      string msg = PRIVMSG(client.getNickname(), targetClient->getNickname(), msgContent);
+      cout << msg << endl;
+      send(targetClient->getSocket(), msgContent.c_str(), msgContent.size(), 0);
+    }
   }
 }
 
@@ -126,7 +128,6 @@ void Event::_manageTOPIC(string &message, Client &client) {
   string channelName, topic, msg;
   bool isTopicIsChanged = topicParsing(message, channelName, topic);
   Channel *channel = _serv.findChannel(channelName);
-  cout << "\n***********Manage TOPIC***********\n";
   if (channel == NULL) {
     msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
     sendRC(msg, client.getSocket());

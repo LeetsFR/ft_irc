@@ -49,6 +49,8 @@ typedef enum {
 
 #define RPL_NAMREPLY(client, channel, userlist) client + " 353 " + client + " = " + channel + " :" + userlist + "\r\n"
 
+#define PRIVMSG(sender, target, message) ":" + sender + " PRIVMSG " + target + " :" + message + "\r\n"
+
 #define RPL_ENDOFNAMES(client, channel) client + " 366 " + client + " " + channel + " :End of /NAMES list\r\n"
 
 #define RPL_NAMREPLY_AND_ENDOFNAMES(client, channel, userlist) RPL_NAMREPLY(client, channel, userlist) + RPL_ENDOFNAMES(client, channel)
@@ -86,7 +88,8 @@ typedef enum {
 #define ERR_USERONCHANNEL(clientName, nick, channel) (string(":") + clientName + " 443 " + nick + " " + channel + " :is already on channel\r\n")
 #define ERR_NOSUCHNICK(clientName, nick) (string(":") + clientName + " 401 " + nick + " :No such nick\r\n")
 
-#define RPL_INVITING(client_nick, target_nick, channel_name) (std::string(":") + client_nick + " 341 " + target_nick + " " + channel_name + " :You have invited " + target_nick + " to " + channel_name + "\r\n")
+#define RPL_INVITING(client_nick, target_nick, channel_name)                                                                                                                                           \
+  (std::string(":") + client_nick + " 341 " + target_nick + " " + channel_name + " :You have invited " + target_nick + " to " + channel_name + "\r\n")
 
 using namespace std;
 

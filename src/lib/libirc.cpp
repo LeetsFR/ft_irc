@@ -124,7 +124,7 @@ void privmsgParsing(const string &message, string &recipient, string &msgContent
   string rest = message.substr(pos + 1);
   pos = rest.find(' ');
   recipient = rest.substr(0, pos);
-  msgContent = rest.substr(pos + 1);
+  msgContent = rest.substr(pos + 2);
 }
 
 bool getMessage(int fd, string &message) {
