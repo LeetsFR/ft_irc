@@ -77,9 +77,7 @@ const string Channel::getUserList() const {
     if (it->second == true)
       userlist.append("@");
     userlist.append(it->first.getNickname());
-    ++it;
-    if (it != _listClient.end())
-      userlist.append(" ");
+    userlist.append(" ");
   }
   return userlist;
 }

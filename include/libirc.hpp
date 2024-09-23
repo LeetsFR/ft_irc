@@ -69,7 +69,7 @@ typedef enum {
 #define ERR_NOORIGIN(serverName, clientName) (string(":") + serverName + " 409 " + clientName + " :No origin specified\r\n")
 
 #define ERR_NONICKNAMEGIVEN(clientName) (string(":") + clientName + " 431 :No nickname given\r\n")
-#define ERR_NICKNAMEINUSE(clientName, nick) (string(":") + clientName + " 433 " + nick + " :Nickname is already in use\r\n")
+#define ERR_NICKNAMEINUSE(clientName, nick) (string(":") + clientName + " 432 " + nick + " :Nickname is already in use\r\n")
 #define ERR_ERRONEUSNICKNAME(clientName, nick) (string(":") + clientName + " 432 " + nick + " :Erroneous nickname\r\n")
 
 #define ERR_CANNOTSENDTOCHAN(clientName, channel) (string(":") + clientName + " 404 " + channel + " :Cannot send to channel\r\n")

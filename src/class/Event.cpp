@@ -51,13 +51,14 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
 }
 
 Event::~Event() {}
+
 void Event::_managePRIVMSG(string &message, Client &client) {
   string targetName;
   string msgContent;
 
   privmsgParsing(message, targetName, msgContent);
 
-  if (targetName.empty() == false && (targetName[0] == '#' || targetName[0] == '&')) {
+  if (!targetName.empty() && (targetName[0] == '#' || targetName[0] == '&')) {
     Channel *channel = _serv.findChannel(targetName);
     if (channel == NULL) {
       string errorMsg = ERR_NOSUCHCHANNEL(client.getNickname(), targetName);
@@ -65,14 +66,14 @@ void Event::_managePRIVMSG(string &message, Client &client) {
       return;
     }
 
-    if (channel->findClient(client.getSocket()) == false) {
+    if (!channel->findClient(client.getSocket())) {
       string errorMsg = ERR_CANNOTSENDTOCHAN(client.getNickname(), targetName);
       send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
       return;
     }
 
     string fullMsg = ":" + client.getNickname() + "!" + client.getUser() + "@" + client.getHostname() + " PRIVMSG " + targetName + " :" + msgContent + "\r\n";
-    channel->sendAllClient(fullMsg);
+    channel->sendAllOtherClient(fullMsg, client.getSocket());
   } else {
     Client *targetClient = _serv.findClient(targetName);
     if (targetClient == NULL) {
@@ -83,7 +84,13 @@ void Event::_managePRIVMSG(string &message, Client &client) {
     if (targetClient->getSocket() != client.getSocket()) {
       string msg = PRIVMSG(client.getNickname(), targetClient->getNickname(), msgContent);
       cout << msg << endl;
-      send(targetClient->getSocket(), msgContent.c_str(), msgContent.size(), 0);
+      
+      ssize_t bytesSent = send(targetClient->getSocket(), msg.c_str(), msg.size(), 0);
+      if (bytesSent == -1) {
+        perror("send");
+      } else {
+        cout << "Sent " << bytesSent << " bytes to " << targetClient->getNickname() << endl;
+      }
     }
   }
 }
