@@ -58,74 +58,45 @@ void Event::_managePRIVMSG(string &message, Client &client) {
 
   privmsgParsing(message, targetName, msgContent);
 
-  if (!targetName.empty() && (targetName[0] == '#' || targetName[0] == '&')) {
+  if ((targetName[0] == '#' || targetName[0] == '&')) {
     Channel *channel = _serv.findChannel(targetName);
-    if (channel == NULL) {
-      string errorMsg = ERR_NOSUCHCHANNEL(client.getNickname(), targetName);
-      send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
-      return;
-    }
+    if (channel == NULL)
+      return sendRC(ERR_NOSUCHCHANNEL(client.getNickname(), targetName), client.getSocket());
 
-    if (!channel->findClient(client.getSocket())) {
-      string errorMsg = ERR_CANNOTSENDTOCHAN(client.getNickname(), targetName);
-      send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
-      return;
-    }
+    if (channel->findClient(client.getSocket()) == false)
+      return sendRC(ERR_CANNOTSENDTOCHAN(client.getNickname(), targetName), client.getSocket());
 
     string fullMsg = ":" + client.getNickname() + "!" + client.getUser() + "@" + client.getHostname() + " PRIVMSG " + targetName + " :" + msgContent + "\r\n";
     channel->sendAllOtherClient(fullMsg, client.getSocket());
   } else {
     Client *targetClient = _serv.findClient(targetName);
-    if (targetClient == NULL) {
-      string errorMsg = ERR_NOSUCHNICK(client.getNickname(), targetName);
-      send(client.getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
-      return;
-    }
-    if (targetClient->getSocket() != client.getSocket()) {
-      string msg = PRIVMSG(client.getNickname(), targetClient->getNickname(), msgContent);
-      cout << msg << endl;
-      
-      ssize_t bytesSent = send(targetClient->getSocket(), msg.c_str(), msg.size(), 0);
-      if (bytesSent == -1) {
-        perror("send");
-      } else {
-        cout << "Sent " << bytesSent << " bytes to " << targetClient->getNickname() << endl;
-      }
-    }
+    if (targetClient == NULL)
+      return sendRC(ERR_NOSUCHNICK(client.getNickname(), targetName), client.getSocket());
+
+    if (targetClient->getSocket() != client.getSocket())
+      sendRC(PRIVMSG(client.getNickname(), targetClient->getNickname(), msgContent), targetClient->getSocket());
   }
 }
 
-void Event::_managePING(Client &client) {
-  string pongMessage = REP_PONG(client.getNickname());
-  if (send(client.getSocket(), pongMessage.c_str(), pongMessage.size(), 0) == -1)
-    cerr << RED "Error: fail to send message" RESET << endl;
-}
+void Event::_managePING(Client &client) { sendRC(REP_PONG(client.getNickname()), client.getSocket()); }
 
 void Event::_manageKICK(string &message, Client &client) {
   string channelName, kickUserName, reason;
+
   kickParsing(message, channelName, kickUserName, reason);
+
   Channel *channel = _serv.findChannel(channelName);
-  if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getNickname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->clientIsOperator(client) == false) {
-    string msg = ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel == NULL)
+    return sendRC(ERR_NOSUCHCHANNEL(client.getNickname(), channelName), client.getSocket());
+  if (channel->clientIsOperator(client) == false)
+    return sendRC(ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName), client.getSocket());
+
   Client *kickUser = _serv.findClient(kickUserName);
-  if (kickUser == NULL) {
-    string msg = ERR_NOSUCHNICK(client.getNickname(), kickUserName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->findClient(kickUser->getSocket()) == false) {
-    string msg = ERR_USERNOTINCHANNEL(kickUser->getHostname(), kickUserName, channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (kickUser == NULL)
+    return sendRC(ERR_NOSUCHNICK(client.getNickname(), kickUserName), client.getSocket());
+  if (channel->findClient(kickUser->getSocket()) == false)
+    return sendRC(ERR_USERNOTINCHANNEL(kickUser->getHostname(), kickUserName, channelName), client.getSocket());
+
   channel->kickClient(*kickUser);
   string kickMsg = ":" + client.getNickname() + " KICK " + channelName + " " + kickUserName + " :" + reason + "\r\n";
   channel->sendAllClient(kickMsg);
@@ -167,6 +138,7 @@ void Event::_manageTOPIC(string &message, Client &client) {
     return;
   }
 }
+
 void Event::_manageJOIN(string &message, Client &client) {
 
   vector<string> channelName;
@@ -185,6 +157,7 @@ void Event::_manageJOIN(string &message, Client &client) {
     ++jt;
   }
 }
+
 void Event::_manageINVITE(string &message, Client &client) {
   string clientName, channelName;
   inviteParsing(message, clientName, channelName);

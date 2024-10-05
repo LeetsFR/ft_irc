@@ -53,8 +53,6 @@ typedef enum {
 
 #define RPL_ENDOFNAMES(client, channel) client + " 366 " + client + " " + channel + " :End of /NAMES list\r\n"
 
-#define RPL_NAMREPLY_AND_ENDOFNAMES(client, channel, userlist) RPL_NAMREPLY(client, channel, userlist) + RPL_ENDOFNAMES(client, channel)
-
 #define RPL_NOTOPIC(clientName, channelName) (clientName + " 331 " + channelName + " :No topic is set\r\n")
 
 #define RPL_TOPIC(client, channel, topic) client + " 332 " + channel + " :" + topic + "\r\n"

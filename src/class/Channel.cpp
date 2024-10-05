@@ -92,37 +92,36 @@ bool Channel::isInvitedClient(const string &name) const {
 }
 
 void Channel::joinChannel(const string &password, Client &client) {
-  if (_inviteOnly == true) {
-    if (isInvitedClient(client.getNickname()) == false) {
-      string msg = ERR_INVITEONLYCHAN(client.getNickname(), _name);
-      sendRC(msg, client.getSocket());
+  if (_inviteOnly) {
+    if (!isInvitedClient(client.getNickname())) {
+      sendRC(ERR_INVITEONLYCHAN(client.getNickname(), _name), client.getSocket());
       return;
     }
   }
   if (_password != password) {
-    string msg = ERR_BADCHANNELKEY(client.getNickname(), _name);
-    sendRC(msg, client.getSocket());
+    sendRC(ERR_BADCHANNELKEY(client.getNickname(), _name), client.getSocket());
     return;
   }
-  if (_limitClientMode == true) {
+  if (_limitClientMode) {
     if (_actualNbrClient >= _limitClient) {
-      string msg = ERR_CHANNELISFULL(client.getNickname(), _name);
-      sendRC(msg, client.getSocket());
+      sendRC(ERR_CHANNELISFULL(client.getNickname(), _name), client.getSocket());
       return;
-    } else
-      ++_actualNbrClient;
+    }
+    ++_actualNbrClient;
   }
-  if (_topic == "") {
-    string msg = RPL_NOTOPIC(client.getNickname(), _name);
-    sendRC(msg, client.getSocket());
+
+  _listClient.insert(make_pair(client, false));
+
+  string joinMsg = ":" + client.getNickname() + " JOIN :" + _name + "\r\n";
+  sendRC(joinMsg, client.getSocket());
+
+  if (_topic.empty()) {
+    sendRC(RPL_NOTOPIC(client.getNickname(), _name), client.getSocket());
   } else {
-    string msg = RPL_TOPIC(client.getNickname(), _name, _topic);
-    sendRC(msg, client.getSocket());
+    sendRC(RPL_TOPIC(client.getNickname(), _name, _topic), client.getSocket());
   }
-  string msg = RPL_NAMREPLY_AND_ENDOFNAMES(client.getNickname(), _name, getUserList());
-  sendRC(msg, client.getSocket());
-  _listClient.insert(make_pair(client, true));
-  string joinMsg = ":" + client.getNickname() + " JOIN :" + _name;
+  sendRC(RPL_NAMREPLY(client.getNickname(), _name, getUserList()), client.getSocket());
+  sendRC(RPL_ENDOFNAMES(client.getNickname(), _name), client.getSocket());
   sendAllOtherClient(joinMsg, client.getSocket());
 }
 
@@ -133,7 +132,7 @@ void Channel::kickClient(Client &client) {
     if (it->first == client)
       _listClient.erase(it);
   }
-  throw logic_error("Error: Don't find Client kickClient()");
+  cout << printTime() << "Error: Don't find Client kickClient() || " << client.getNickname() << endl;
 }
 
 void Channel::sendAllOtherClient(const string &message, int ignoredFd) const {
