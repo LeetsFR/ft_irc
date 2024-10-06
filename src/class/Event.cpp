@@ -94,49 +94,42 @@ void Event::_manageKICK(string &message, Client &client) {
   Client *kickUser = _serv.findClient(kickUserName);
   if (kickUser == NULL)
     return sendRC(ERR_NOSUCHNICK(client.getNickname(), kickUserName), client.getSocket());
-  if (channel->findClient(kickUser->getSocket()) == false)
-    return sendRC(ERR_USERNOTINCHANNEL(kickUser->getHostname(), kickUserName, channelName), client.getSocket());
+  if (channel->findClient(kickUser) == false)
+    return sendRC(ERR_USERNOTINCHANNEL(kickUser->getHostname(), kickUser->getNickname(), channel->getName()), client.getSocket());
 
-  channel->kickClient(*kickUser);
   string kickMsg = ":" + client.getNickname() + " KICK " + channelName + " " + kickUserName + " :" + reason + "\r\n";
   channel->sendAllClient(kickMsg);
+  channel->kickClient(kickUser);
 }
 
 void Event::_manageTOPIC(string &message, Client &client) {
   string channelName, topic, msg;
+
   bool isTopicIsChanged = topicParsing(message, channelName, topic);
+
   Channel *channel = _serv.findChannel(channelName);
-  if (channel == NULL) {
-    msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->findClient(client.getSocket()) == false) {
-    msg = ERR_NOTONCHANNEL(client.getHostname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel == NULL)
+    return sendRC(ERR_NOSUCHCHANNEL(client.getHostname(), channelName), client.getSocket());
+
+  if (channel->findClient(client.getSocket()) == false)
+    return sendRC(ERR_NOTONCHANNEL(client.getHostname(), channelName), client.getSocket());
+
   if (isTopicIsChanged == true) {
     if (channel->getProtectedTopic() == true) {
       if (channel->clientIsOperator(client) == false)
-        msg = ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName());
-      sendRC(msg, client.getSocket());
-      return;
+        return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()), client.getSocket());
     }
     channel->modifyTopic(topic);
-    msg = RPL_TOPIC(client.getHostname(), channel->getName(), channel->getTopic());
-    channel->sendAllClient(msg);
-    return;
+    string topicMsg = ":" + client.getNickname() + " TOPIC " + channelName + " :" + topic + "\r\n";
+    return channel->sendAllClient(topicMsg);
   } else {
-    if (channel->getTopic() == "") {
+    if (channel->getTopic().empty())
       msg = RPL_NOTOPIC(client.getHostname(), channel->getName());
-
-    } else {
+    else
       msg = RPL_TOPIC(client.getHostname(), channel->getName(), channel->getTopic());
-    }
-    sendRC(msg, client.getSocket());
-    return;
   }
+
+  return sendRC(msg, client.getSocket());
 }
 
 void Event::_manageJOIN(string &message, Client &client) {

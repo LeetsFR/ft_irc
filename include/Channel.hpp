@@ -27,9 +27,10 @@ public:
   void modifyTopic(const string &topic);
   void joinChannel(const string &password, Client &client);
   bool clientIsOperator(Client &);
-  void kickClient(Client &);
+  void kickClient(Client *);
   bool isInvitedClient(const string &name) const;
   bool findClient(const int fd) const;
+  bool findClient(Client *) const;
   const Client *findClient(const string &);
   void sendAllOtherClient(const string &, int) const;
   void sendAllClient(const string &) const;

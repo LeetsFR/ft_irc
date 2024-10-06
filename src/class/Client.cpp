@@ -84,7 +84,6 @@ bool Client::handleMessage(std::string message, IRC &server) {
     else
     {
       typeMsg type = this->receiveMessage(this->_messageTmp[0], server);
-      cout << "\n-----------End TOPIC-----------\n";
       Event action(this->_messageTmp[0], *this, type, server);
     }
     this->_messageTmp.erase(this->_messageTmp.begin());

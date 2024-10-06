@@ -83,7 +83,7 @@ bool topicParsing(string &message, string &channelName, string &topicName) {
     channelName = message.substr(endTopic + 1);
     return false;
   } else {
-    channelName = message.substr(endTopic + 1, endChannelName - endTopic - 1);
+    channelName = message.substr(endTopic + 1, endChannelName - endTopic - 2);
     topicName = message.substr(endChannelName + 1);
     return true;
   }

@@ -5,9 +5,7 @@
 
 Channel::Channel(const string &name, const string &password, Client &client) : _name(name), _password(password) {
   _listClient.insert(make_pair(client, true));
-  string err = RPL_NOTOPIC(client.getNickname(), _name);
-  if (send(client.getSocket(), err.c_str(), err.size(), 0) == -1)
-    cerr << printTime() << RED "Error: fail to send message" RESET << endl;
+  sendRC(RPL_NOTOPIC(client.getNickname(), _name), client.getSocket());
   _topic = "";
   _protectedTopic = false;
   _limitClient = 0;
@@ -125,14 +123,15 @@ void Channel::joinChannel(const string &password, Client &client) {
   sendAllOtherClient(joinMsg, client.getSocket());
 }
 
-void Channel::kickClient(Client &client) {
+void Channel::kickClient(Client *client) {
   map<Client, bool>::iterator it;
 
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
-    if (it->first == client)
+    if (it->first.getUniqId() == client->getUniqId())
       _listClient.erase(it);
+    return;
   }
-  cout << printTime() << "Error: Don't find Client kickClient() || " << client.getNickname() << endl;
+  cout << printTime() << "Error: Don't find Client kickClient() || " << endl;
 }
 
 void Channel::sendAllOtherClient(const string &message, int ignoredFd) const {
@@ -147,6 +146,15 @@ bool Channel::findClient(const int fd) const {
   map<Client, bool>::const_iterator it;
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
     if (it->first.getSocket() == fd)
+      return true;
+  }
+  return false;
+}
+
+bool Channel::findClient(Client *client) const {
+  map<Client, bool>::const_iterator it;
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->first.getSocket() == client->getSocket() && it->first.getUniqId() == client->getUniqId())
       return true;
   }
   return false;

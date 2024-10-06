@@ -156,8 +156,7 @@ void IRC::_getEventClient(int fd) {
   }
   cout << printTime() << message << endl;
   Client &client = findClient(fd);
-  if (client.handleMessage(message, *this) == false)
-  {
+  if (client.handleMessage(message, *this) == false) {
     removeClient(fd);
     return;
   }
