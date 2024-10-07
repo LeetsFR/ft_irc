@@ -7,7 +7,6 @@ Channel::Channel(const string &name, const string &password, Client &client) : _
   _listClient.insert(make_pair(client, true));
   sendRC(RPL_NOTOPIC(client.getNickname(), _name), client.getSocket());
   _topic = "";
-  _protectedTopic = false;
   _limitClient = 0;
   _actualNbrClient = 0;
   _limitClientMode = false;
@@ -23,7 +22,7 @@ const string &Channel::getTopic() const { return _topic; }
 
 bool Channel::getInviteOnly() const { return _inviteOnly; }
 
-bool Channel::getProtectedTopic() const { return _protectedTopic; }
+bool Channel::getTopicOnlyOperator() const { return _topicOnlyOperator; }
 
 void Channel::modifyTopic(const string &topic) { _topic = topic; }
 

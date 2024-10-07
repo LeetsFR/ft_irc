@@ -85,7 +85,9 @@ typedef enum {
 #define ERR_CHANOPRIVSNEEDED(clientName, channel) (string(":") + clientName + " 482 " + channel + " :You're not channel operator\r\n")
 #define ERR_USERNOTINCHANNEL(clientName, nick, channel) (string(":") + clientName + " 441 " + nick + " " + channel + " :They aren't on that channel\r\n")
 #define ERR_NOTONCHANNEL(clientName, channel) (string(":") + clientName + " 442 " + channel + " :You're not on that channel\r\n")
-#define ERR_USERONCHANNEL(clientName, nick, channel) (string(":") + clientName + " 443 " + nick + " " + channel + " :is already on channel\r\n")
+
+#define ERR_USERONCHANNEL(nick, channel) ("443" + nick + " " + channel + " :is already on channel\r\n")
+
 #define ERR_NOSUCHNICK(clientName, nick) (string(":") + clientName + " 401 " + nick + " :No such nick\r\n")
 
 #define RPL_INVITING(client_nick, target_nick, channel_name)                                                                                                                                           \

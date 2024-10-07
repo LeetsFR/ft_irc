@@ -13,7 +13,7 @@ public:
 
   const string &getName() const;
   bool getInviteOnly() const;
-  bool getProtectedTopic() const;
+  bool getTopicOnlyOperator() const;
   const string &getTopic() const;
   const string getUserList() const;
   void setInviteOnly(bool);

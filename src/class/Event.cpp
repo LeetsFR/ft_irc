@@ -115,7 +115,7 @@ void Event::_manageTOPIC(string &message, Client &client) {
     return sendRC(ERR_NOTONCHANNEL(client.getHostname(), channelName), client.getSocket());
 
   if (isTopicIsChanged == true) {
-    if (channel->getProtectedTopic() == true) {
+    if (channel->getTopicOnlyOperator() == true) {
       if (channel->clientIsOperator(client) == false)
         return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()), client.getSocket());
     }
@@ -156,42 +156,26 @@ void Event::_manageINVITE(string &message, Client &client) {
   inviteParsing(message, clientName, channelName);
 
   Channel *channel = _serv.findChannel(channelName);
-  if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getNickname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel == NULL)
+    return sendRC(ERR_NOSUCHCHANNEL(client.getNickname(), channelName), client.getSocket());
 
-  if (!channel->findClient(client.getSocket())) {
-    string msg = ERR_NOTONCHANNEL(client.getNickname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel->findClient(client.getSocket()) == false)
+    return sendRC(ERR_NOTONCHANNEL(client.getNickname(), channelName), client.getSocket());
 
   Client *invitedClient = _serv.findClient(clientName);
-  if (invitedClient == NULL) {
-    string msg = ERR_NOSUCHNICK(client.getNickname(), clientName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (invitedClient == NULL)
+    return sendRC(ERR_NOSUCHNICK(client.getNickname(), clientName), client.getSocket());
 
-  if (channel->findClient(invitedClient->getSocket())) {
-    string msg = ERR_USERONCHANNEL(client.getNickname(), clientName, channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel->findClient(invitedClient->getSocket()))
+    return sendRC(ERR_USERONCHANNEL(client.getNickname(), clientName), client.getSocket());
 
   if (channel->getInviteOnly()) {
-    if (!channel->clientIsOperator(client)) {
-      string msg = ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName);
-      sendRC(msg, client.getSocket());
-      return;
-    }
+    if (channel->clientIsOperator(client) == false)
+      return sendRC(ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName), client.getSocket());
     channel->addInvitedClient(invitedClient->getNickname());
   }
 
-  string msg = RPL_INVITING(client.getNickname(), invitedClient->getNickname(), channelName);
-  sendRC(msg, client.getSocket());
+  sendRC(RPL_INVITING(client.getNickname(), invitedClient->getNickname(), channelName), client.getSocket());
 
   string inviteMsg = ":" + client.getNickname() + " INVITE " + invitedClient->getNickname() + " :" + channelName + "\r\n";
   sendRC(inviteMsg, invitedClient->getSocket());
@@ -201,21 +185,12 @@ void Event::_manageMode_I(string &message, Client &client) {
   string channelName, mode;
   modeParsing(message, channelName, mode);
   Channel *channel = _serv.findChannel(channelName);
-  if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->findClient(client.getSocket()) == false) {
-    string msg = ERR_NOTONCHANNEL(client.getHostname(), channel->getName());
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->clientIsOperator(client) == false) {
-    string msg = ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName());
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel == NULL)
+    return sendRC(ERR_NOSUCHCHANNEL(client.getHostname(), channelName), client.getSocket());
+  if (channel->findClient(client.getSocket()) == false)
+    return sendRC(ERR_NOTONCHANNEL(client.getHostname(), channel->getName()), client.getSocket());
+  if (channel->clientIsOperator(client) == false)
+    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()), client.getSocket());
   if (mode[0] == '+')
     channel->setInviteOnly(true);
   else if (mode[0] == '-')
@@ -225,22 +200,14 @@ void Event::_manageMode_I(string &message, Client &client) {
 void Event::_manageMode_T(string &message, Client &client) {
   string channelName, mode;
   modeParsing(message, channelName, mode);
+
   Channel *channel = _serv.findChannel(channelName);
-  if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->findClient(client.getSocket()) == false) {
-    string msg = ERR_NOTONCHANNEL(client.getHostname(), channel->getName());
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->clientIsOperator(client) == false) {
-    string msg = ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName());
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel == NULL)
+    return sendRC(ERR_NOSUCHCHANNEL(client.getHostname(), channelName), client.getSocket());
+  if (channel->findClient(client.getSocket()) == false)
+    return sendRC(ERR_NOTONCHANNEL(client.getHostname(), channel->getName()), client.getSocket());
+  if (channel->clientIsOperator(client) == false)
+    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()), client.getSocket());
   if (mode[0] == '+')
     channel->setTopicOnlyOperator(true);
   else if (mode[0] == '-')
@@ -311,7 +278,7 @@ void Event::_manageMode_O(std::string &message, Client &client) {
   }
   if (mode[0] == '+') {
     if (channel->clientIsOperator(*targetClient)) {
-      std::string msg = ERR_USERONCHANNEL(client.getNickname(), targetNick, channelName);
+      std::string msg = ERR_USERONCHANNEL(client.getNickname(), targetNick);
       sendRC(msg, client.getSocket());
       return;
     }
