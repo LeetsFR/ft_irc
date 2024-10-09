@@ -80,10 +80,11 @@ typedef enum {
 #define ERR_BADCHANNELKEY(clientName, channel) (string(":") + clientName + " 475 " + channel + " :Cannot join channel (+k)\r\n")
 #define ERR_BANNEDFROMCHAN(clientName, channel) (string(":") + clientName + " 474 " + channel + " :Cannot join channel (+b)\r\n")
 #define ERR_CHANNELISFULL(clientName, channel) (string(":") + clientName + " 471 " + channel + " :Cannot join channel (+l)\r\n")
-#define ERR_INVITEONLYCHAN(clientName, channel) (string(":") + clientName + " 473 " + channel + " :Cannot join channel (+i)\r\n")
+#define ERR_INVITEONLYCHAN(clientNick, channel) ("473 " + clientNick + " " + channel + " :Cannot join channel (+i)\r\n")
 #define ERR_BADCHANMASK(clientName, channel) (string(":") + clientName + " 476 " + channel + " :Bad channel mask\r\n")
 #define ERR_CHANOPRIVSNEEDED(clientName, channel) (string(":") + clientName + " 482 " + channel + " :You're not channel operator\r\n")
-#define ERR_USERNOTINCHANNEL(clientName, nick, channel) (string(":") + clientName + " 441 " + nick + " " + channel + " :They aren't on that channel\r\n")
+#define ERR_USERNOTINCHANNEL(clientNick, nick, channel) ("441 " + clientNick + " " + nick + " " + channel + " :They aren't on that channel\r\n")
+
 #define ERR_NOTONCHANNEL(clientName, channel) (string(":") + clientName + " 442 " + channel + " :You're not on that channel\r\n")
 
 #define ERR_USERONCHANNEL(nick, channel) ("443" + nick + " " + channel + " :is already on channel\r\n")

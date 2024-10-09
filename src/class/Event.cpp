@@ -94,8 +94,10 @@ void Event::_manageKICK(string &message, Client &client) {
   Client *kickUser = _serv.findClient(kickUserName);
   if (kickUser == NULL)
     return sendRC(ERR_NOSUCHNICK(client.getNickname(), kickUserName), client.getSocket());
-  if (channel->findClient(kickUser) == false)
-    return sendRC(ERR_USERNOTINCHANNEL(kickUser->getHostname(), kickUser->getNickname(), channel->getName()), client.getSocket());
+  if (channel->findClient(kickUser) == false) {
+    cout << "on rentre" << endl;
+    return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), kickUser->getNickname(), channel->getName()), client.getSocket());
+  }
 
   string kickMsg = ":" + client.getNickname() + " KICK " + channelName + " " + kickUserName + " :" + reason + "\r\n";
   channel->sendAllClient(kickMsg);

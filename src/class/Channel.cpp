@@ -90,20 +90,14 @@ bool Channel::isInvitedClient(const string &name) const {
 
 void Channel::joinChannel(const string &password, Client &client) {
   if (_inviteOnly) {
-    if (!isInvitedClient(client.getNickname())) {
-      sendRC(ERR_INVITEONLYCHAN(client.getNickname(), _name), client.getSocket());
-      return;
-    }
+    if (isInvitedClient(client.getNickname()) == false)
+      return sendRC(ERR_INVITEONLYCHAN(client.getNickname(), _name), client.getSocket());
   }
-  if (_password != password) {
-    sendRC(ERR_BADCHANNELKEY(client.getNickname(), _name), client.getSocket());
-    return;
-  }
+  if (_password != password)
+    return sendRC(ERR_BADCHANNELKEY(client.getNickname(), _name), client.getSocket());
   if (_limitClientMode) {
-    if (_actualNbrClient >= _limitClient) {
-      sendRC(ERR_CHANNELISFULL(client.getNickname(), _name), client.getSocket());
-      return;
-    }
+    if (_actualNbrClient >= _limitClient)
+      return sendRC(ERR_CHANNELISFULL(client.getNickname(), _name), client.getSocket());
     ++_actualNbrClient;
   }
 
