@@ -38,33 +38,14 @@ void handleSigint(int sig) {
   cout << "\r";
 }
 
-bool joinParsing(string &message, vector<string> &channel, vector<string> &password) {
+bool joinParsing(string &message, string &channel, string &password) {
   string::size_type typeEndPos = message.find(' ');
   string::size_type channelEndPos = message.find(' ', typeEndPos + 1);
-  string channelBuffer = message.substr(typeEndPos + 1, channelEndPos - typeEndPos - 1);
-  string::size_type start = 0;
-  string::size_type end;
-  while ((end = channelBuffer.find(',', start)) != string::npos) {
-    channel.push_back(channelBuffer.substr(start, end - start));
-    start = end + 1;
-  }
-  channel.push_back(channelBuffer.substr(start));
-  start = 0;
-  if (channelEndPos != string::npos) {
-    string passwordBuffer = message.substr(channelEndPos + 1);
-    cout << passwordBuffer << endl;
-    start = 0;
-    while ((end = passwordBuffer.find(',', start)) != string::npos) {
-      password.push_back(passwordBuffer.substr(start, end - start));
-      start = end + 1;
-    }
-    password.push_back(passwordBuffer.substr(start));
-  }
-  while (password.size() < channel.size()) {
-    password.push_back("");
-  }
-
-  vector<string>::iterator it;
+  channel = message.substr(typeEndPos + 1, channelEndPos - typeEndPos - 1);
+  if (channelEndPos != string::npos)
+    password = message.substr(channelEndPos + 1);
+  else
+    password.clear();
   return true;
 }
 

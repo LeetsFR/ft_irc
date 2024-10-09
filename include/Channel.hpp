@@ -18,7 +18,7 @@ public:
   const string getUserList() const;
   void setInviteOnly(bool);
   void setTopicOnlyOperator(bool);
-  void setPassword(string &);
+  void setPassword(string &, bool);
   void setUserLimit(int);
   void removeUserLimit();
   void addOperator(Client &);
@@ -38,6 +38,7 @@ public:
 private:
   const string _name;
   string _password;
+  bool _passwordON;
   string _topic;
   bool _protectedTopic;
   int _limitClient;

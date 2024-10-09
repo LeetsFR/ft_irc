@@ -7,6 +7,10 @@ Channel::Channel(const string &name, const string &password, Client &client) : _
   _listClient.insert(make_pair(client, true));
   sendRC(RPL_NOTOPIC(client.getNickname(), _name), client.getSocket());
   _topic = "";
+  if (password.empty())
+    _passwordON = false;
+  else
+    _passwordON = true;
   _limitClient = 0;
   _actualNbrClient = 0;
   _limitClientMode = false;
@@ -39,7 +43,10 @@ void Channel::setInviteOnly(bool value) { _inviteOnly = value; }
 
 void Channel::setTopicOnlyOperator(bool value) { _topicOnlyOperator = value; }
 
-void Channel::setPassword(string &password) { password = _password; }
+void Channel::setPassword(string &password, bool passwordON) {
+  _passwordON = passwordON;
+  password = _password;
+}
 
 void Channel::setUserLimit(int value) {
   _limitClientMode = true;
@@ -93,8 +100,10 @@ void Channel::joinChannel(const string &password, Client &client) {
     if (isInvitedClient(client.getNickname()) == false)
       return sendRC(ERR_INVITEONLYCHAN(client.getNickname(), _name), client.getSocket());
   }
-  if (_password != password)
-    return sendRC(ERR_BADCHANNELKEY(client.getNickname(), _name), client.getSocket());
+  if (_passwordON == true) {
+    if (_password != password)
+      return sendRC(ERR_BADCHANNELKEY(client.getNickname(), _name), client.getSocket());
+  }
   if (_limitClientMode) {
     if (_actualNbrClient >= _limitClient)
       return sendRC(ERR_CHANNELISFULL(client.getNickname(), _name), client.getSocket());

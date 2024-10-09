@@ -53,11 +53,11 @@ typedef enum {
 
 #define RPL_ENDOFNAMES(client, channel) client + " 366 " + client + " " + channel + " :End of /NAMES list\r\n"
 
-#define RPL_NOTOPIC(clientName, channelName) ((clientName) + " 331 " + (channelName) + " :No topic is set\r\n")
+#define RPL_NOTOPIC(clientNick, channelName) ("331 " + clientNick + " " + channelName + " :No topic is set\r\n")
 
-#define RPL_TOPIC(client, channel, topic) ((client) + " 332 " + (channel) + " :" + (topic) + "\r\n")
+#define RPL_TOPIC(clientNick, channel, topic) ("332 " + clientNick + " " + channel + " :" + topic + "\r\n")
 
-#define RPL_TOPICWHOTIME(client, channel, nick, setat) (client + " 333 " + channel + " " + nick + " " + setat + "\r\n")
+#define RPL_NOTOPIC(clientNick, channelName) ("331 " + clientNick + " " + channelName + " :No topic is set\r\n")
 
 #define REP_CAPEND(clientName) (string(":") + clientName + " 001 " + clientName + " :Welcome to the Internet Relay Network " + clientName + "\r\n")
 
@@ -77,7 +77,8 @@ typedef enum {
 #define ERR_INPUTTOOLONG(clientName) (string(":") + clientName + " 417 " + clientName + " :Input line was too long\r\n")
 #define ERR_NOSUCHCHANNEL(clientName, channel) (string(":") + clientName + " 403 " + channel + " :No such channel\r\n")
 #define ERR_TOOMANYCHANNELS(clientName, channel) (string(":") + clientName + " 405 " + channel + " :You have joined too many channels\r\n")
-#define ERR_BADCHANNELKEY(clientName, channel) (string(":") + clientName + " 475 " + channel + " :Cannot join channel (+k)\r\n")
+#define ERR_BADCHANNELKEY(clientNick, channel) ("475 " + clientNick + " " + channel + " :Cannot join channel (+k)\r\n")
+
 #define ERR_BANNEDFROMCHAN(clientName, channel) (string(":") + clientName + " 474 " + channel + " :Cannot join channel (+b)\r\n")
 #define ERR_CHANNELISFULL(clientName, channel) (string(":") + clientName + " 471 " + channel + " :Cannot join channel (+l)\r\n")
 #define ERR_INVITEONLYCHAN(clientNick, channel) ("473 " + clientNick + " " + channel + " :Cannot join channel (+i)\r\n")
@@ -103,7 +104,7 @@ int convertIntSafe(const string &n);
 string printTime();
 vector<string> ft_split(const string &, const string &);
 bool kickParsing(const string &message, string &, string &, string &);
-bool joinParsing(string &message, vector<string> &channel, vector<string> &password);
+bool joinParsing(string &message, string &channel, string &password);
 bool inviteParsing(string &message, string &, string &);
 void privmsgParsing(const string &message, string &, string &);
 bool topicParsing(string &message, string &channelName, string &topicName);

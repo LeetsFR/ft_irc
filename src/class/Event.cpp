@@ -94,10 +94,8 @@ void Event::_manageKICK(string &message, Client &client) {
   Client *kickUser = _serv.findClient(kickUserName);
   if (kickUser == NULL)
     return sendRC(ERR_NOSUCHNICK(client.getNickname(), kickUserName), client.getSocket());
-  if (channel->findClient(kickUser) == false) {
-    cout << "on rentre" << endl;
+  if (channel->findClient(kickUser) == false)
     return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), kickUser->getNickname(), channel->getName()), client.getSocket());
-  }
 
   string kickMsg = ":" + client.getNickname() + " KICK " + channelName + " " + kickUserName + " :" + reason + "\r\n";
   channel->sendAllClient(kickMsg);
@@ -136,21 +134,16 @@ void Event::_manageTOPIC(string &message, Client &client) {
 
 void Event::_manageJOIN(string &message, Client &client) {
 
-  vector<string> channelName;
-  vector<string> password;
+  string channelName;
+  string password;
   joinParsing(message, channelName, password);
-  vector<string>::iterator it = channelName.begin();
-  vector<string>::iterator jt = password.begin();
-  while (it != channelName.end()) {
-    Channel *channelPtr = _serv.findChannel(*it);
-    if (channelPtr == NULL) {
-      _serv.createChannel(*it, *jt, client);
-    } else {
-      channelPtr->joinChannel(*jt, client);
-    }
-    ++it;
-    ++jt;
-  }
+  cout << "ChannelName: " << "--" << channelName << "--" << endl;
+  cout << "Password: " << "--" << password << "--" << endl;
+  Channel *channelPtr = _serv.findChannel(channelName);
+  if (channelPtr == NULL)
+    _serv.createChannel(channelName, password, client);
+  else
+    channelPtr->joinChannel(password, client);
 }
 
 void Event::_manageINVITE(string &message, Client &client) {
@@ -220,82 +213,52 @@ void Event::_manageMode_K(string &message, Client &client) {
   string channelName, mode, param;
   modeParamParsing(message, channelName, mode, param);
   Channel *channel = _serv.findChannel(channelName);
-  if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->findClient(client.getSocket()) == false) {
-    string msg = ERR_NOTONCHANNEL(client.getHostname(), channel->getName());
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->clientIsOperator(client) == false) {
-    string msg = ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName());
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel == NULL)
+    return sendRC(ERR_NOSUCHCHANNEL(client.getHostname(), channelName), client.getSocket());
+  if (channel->findClient(client.getSocket()) == false)
+    return sendRC(ERR_NOTONCHANNEL(client.getHostname(), channel->getName()), client.getSocket());
+  if (channel->clientIsOperator(client) == false)
+    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()), client.getSocket());
   if (mode[0] == '+')
-    channel->setPassword(param);
+    channel->setPassword(param, true);
   else if (mode[0] == '-') {
     string tmp = "";
-    channel->setPassword(tmp);
+    channel->setPassword(tmp, false);
   }
 }
 
 void Event::_manageMode_O(std::string &message, Client &client) {
-  std::string channelName, mode, targetNick;
+  string channelName, mode, targetNick;
   modeParamParsing(message, channelName, mode, targetNick);
 
   Channel *channel = _serv.findChannel(channelName);
-  if (channel == NULL) {
-    std::string msg = ERR_NOSUCHCHANNEL(client.getHostname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel == NULL)
+    return sendRC(ERR_NOSUCHCHANNEL(client.getHostname(), channelName), client.getSocket());
 
-  if (channel->findClient(client.getSocket()) == false) {
-    std::string msg = ERR_NOTONCHANNEL(client.getHostname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel->findClient(client.getSocket()) == false)
+    return sendRC(ERR_NOTONCHANNEL(client.getHostname(), channelName), client.getSocket());
 
-  if (channel->clientIsOperator(client) == false) {
-    std::string msg = ERR_CHANOPRIVSNEEDED(client.getHostname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel->clientIsOperator(client) == false)
+    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channelName), client.getSocket());
 
   Client *targetClient = _serv.findClient(targetNick);
-  if (targetClient == NULL) {
-    std::string msg = ERR_NOSUCHNICK(client.getNickname(), targetNick);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (targetClient == NULL)
+    return sendRC(ERR_NOSUCHNICK(client.getNickname(), targetNick), client.getSocket());
 
-  if (channel->findClient(targetClient->getSocket()) == false) {
-    std::string msg = ERR_USERNOTINCHANNEL(client.getNickname(), targetNick, channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
+  if (channel->findClient(targetClient->getSocket()) == false)
+    return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), targetNick, channelName), client.getSocket());
   if (mode[0] == '+') {
-    if (channel->clientIsOperator(*targetClient)) {
-      std::string msg = ERR_USERONCHANNEL(client.getNickname(), targetNick);
-      sendRC(msg, client.getSocket());
-      return;
-    }
+    if (channel->clientIsOperator(*targetClient))
+      return sendRC(ERR_USERONCHANNEL(client.getNickname(), targetNick), client.getSocket());
     channel->addOperator(*targetClient);
-    std::string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " +o " + targetNick + "\r\n";
+    string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " +o " + targetNick + "\r\n";
     channel->sendAllClient(modeMsg);
 
   } else if (mode[0] == '-') {
-    if (channel->clientIsOperator(*targetClient) == false) {
-      std::string msg = ERR_USERNOTINCHANNEL(client.getNickname(), targetNick, channelName);
-      sendRC(msg, client.getSocket());
-      return;
-    }
+    if (channel->clientIsOperator(*targetClient) == false)
+      return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), targetNick, channelName), client.getSocket());
     channel->removeOperator(*targetClient);
-    std::string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " -o " + targetNick + "\r\n";
+    string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " -o " + targetNick + "\r\n";
     channel->sendAllClient(modeMsg);
   }
 }
