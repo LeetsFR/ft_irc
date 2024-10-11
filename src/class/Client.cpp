@@ -279,6 +279,8 @@ typeMsg Client::parsMode(string &message, IRC &server) {
     sendMsgToClient(ERR_NOSUCHCHANNEL(this->_nickname, modeToken));
     return (ERROR);
   }
+  if(modeParam.size() == 2)
+    return(IGNORE);
   modeToken = modeParam[2];
   if ((modeToken[0] != '-' && modeToken[0] != '+') || modeToken.size() != 2) {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "MODE"));
