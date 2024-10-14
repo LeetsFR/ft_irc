@@ -112,7 +112,7 @@ void Channel::joinChannel(const string &password, Client &client) {
 
   _listClient.insert(make_pair(client, false));
 
-  string joinMsg = ":" + client.getNickname() + " JOIN :" + _name + "\r\n";
+  string joinMsg = ":" + client.getNickname() + "@server" + " JOIN :" + _name + "\r\n";
   sendRC(joinMsg, client.getSocket());
 
   if (_topic.empty()) {
