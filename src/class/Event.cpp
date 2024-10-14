@@ -96,7 +96,7 @@ void Event::_manageKICK(string &message, Client &client) {
     return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), kickUser->getNickname(), channel->getName()),
                   client.getSocket());
 
-  string kickMsg = ":" + client.getNickname() + " KICK " + channelName + " " + kickUserName + " :" + reason + "\r\n";
+  std::string kickMsg = ":server KICK " + channelName + " " + kickUserName + " :" + reason + "\r\n";
   channel->sendAllClient(kickMsg);
   channel->kickClient(kickUser);
 }

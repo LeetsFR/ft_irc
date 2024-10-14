@@ -15,6 +15,14 @@ Channel::Channel(const string &name, const string &password, Client &client) : _
   _limitClientMode = false;
   _inviteOnly = false;
   _topicOnlyOperator = false;
+
+  string joinMsg = ":" + client.getNickname() + "@server" + " JOIN :" + _name + "\r\n";
+  sendRC(joinMsg, client.getSocket());
+  if (_topic.empty() == false)
+    sendRC(RPL_TOPIC(client.getNickname(), _name, _topic), client.getSocket());
+  sendRC(RPL_NAMREPLY(client.getNickname(), _name, getUserList()), client.getSocket());
+  sendRC(RPL_ENDOFNAMES(client.getNickname(), _name), client.getSocket());
+  sendAllOtherClient(joinMsg, client.getSocket());
 }
 
 Channel::~Channel() {}
@@ -125,9 +133,10 @@ void Channel::kickClient(Client *client) {
   map<Client, bool>::iterator it;
 
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
-    if (it->first.getNickname() == client->getNickname())
+    if (it->first.getNickname() == client->getNickname()) {
       _listClient.erase(it);
-    return;
+      return;
+    }
   }
   cout << printTime() << "Error: Don't find Client kickClient() || " << endl;
 }
