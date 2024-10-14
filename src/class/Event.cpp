@@ -72,14 +72,11 @@ void Event::_managePRIVMSG(string &message, Client &client) {
       return sendRC(ERR_NOSUCHNICK(client.getNickname(), targetName), client.getSocket());
 
     if (targetClient->getSocket() != client.getSocket())
-      sendRC(PRIVMSG(client.getNickname(), targetClient->getNickname(), msgContent),
-             targetClient->getSocket());
+      sendRC(PRIVMSG(client.getNickname(), targetClient->getNickname(), msgContent), targetClient->getSocket());
   }
 }
 
-void Event::_managePING(Client &client) {
-  sendRC(REP_PONG(client.getNickname()), client.getSocket());
-}
+void Event::_managePING(Client &client) { sendRC(REP_PONG(client.getNickname()), client.getSocket()); }
 
 void Event::_manageKICK(string &message, Client &client) {
   string channelName, kickUserName, reason;
@@ -96,12 +93,10 @@ void Event::_manageKICK(string &message, Client &client) {
   if (kickUser == NULL)
     return sendRC(ERR_NOSUCHNICK(client.getNickname(), kickUserName), client.getSocket());
   if (channel->findClient(kickUser) == false)
-    return sendRC(
-        ERR_USERNOTINCHANNEL(client.getNickname(), kickUser->getNickname(), channel->getName()),
-        client.getSocket());
+    return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), kickUser->getNickname(), channel->getName()),
+                  client.getSocket());
 
-  string kickMsg = ":" + client.getNickname() + " KICK " + channelName + " " + kickUserName + " :" +
-                   reason + "\r\n";
+  string kickMsg = ":" + client.getNickname() + " KICK " + channelName + " " + kickUserName + " :" + reason + "\r\n";
   channel->sendAllClient(kickMsg);
   channel->kickClient(kickUser);
 }
@@ -121,8 +116,7 @@ void Event::_manageTOPIC(string &message, Client &client) {
   if (isTopicIsChanged == true) {
     if (channel->getTopicOnlyOperator() == true) {
       if (channel->clientIsOperator(client) == false)
-        return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()),
-                      client.getSocket());
+        return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()), client.getSocket());
     }
     channel->modifyTopic(topic);
     string topicMsg = ":" + client.getNickname() + " TOPIC " + channelName + " :" + topic + "\r\n";
@@ -175,11 +169,10 @@ void Event::_manageINVITE(string &message, Client &client) {
     channel->addInvitedClient(invitedClient->getNickname());
   }
 
-  sendRC(RPL_INVITING(client.getNickname(), invitedClient->getNickname(), channelName),
-         client.getSocket());
+  sendRC(RPL_INVITING(client.getNickname(), invitedClient->getNickname(), channelName), client.getSocket());
 
-  string inviteMsg = ":" + client.getNickname() + " INVITE " + invitedClient->getNickname() + " :" +
-                     channelName + "\r\n";
+  string inviteMsg =
+      ":" + client.getNickname() + " INVITE " + invitedClient->getNickname() + " :" + channelName + "\r\n";
   sendRC(inviteMsg, invitedClient->getSocket());
 }
 
@@ -192,8 +185,7 @@ void Event::_manageMode_I(string &message, Client &client) {
   if (channel->findClient(client.getSocket()) == false)
     return sendRC(ERR_NOTONCHANNEL(client.getHostname(), channel->getName()), client.getSocket());
   if (channel->clientIsOperator(client) == false)
-    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()),
-                  client.getSocket());
+    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()), client.getSocket());
   if (mode[0] == '+')
     channel->setInviteOnly(true);
   else if (mode[0] == '-')
@@ -210,8 +202,7 @@ void Event::_manageMode_T(string &message, Client &client) {
   if (channel->findClient(client.getSocket()) == false)
     return sendRC(ERR_NOTONCHANNEL(client.getHostname(), channel->getName()), client.getSocket());
   if (channel->clientIsOperator(client) == false)
-    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()),
-                  client.getSocket());
+    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()), client.getSocket());
   if (mode[0] == '+')
     channel->setTopicOnlyOperator(true);
   else if (mode[0] == '-')
@@ -227,8 +218,7 @@ void Event::_manageMode_K(string &message, Client &client) {
   if (channel->findClient(client.getSocket()) == false)
     return sendRC(ERR_NOTONCHANNEL(client.getHostname(), channel->getName()), client.getSocket());
   if (channel->clientIsOperator(client) == false)
-    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()),
-                  client.getSocket());
+    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()), client.getSocket());
   if (mode[0] == '+')
     channel->setPassword(param, true);
   else if (mode[0] == '-') {
@@ -237,7 +227,7 @@ void Event::_manageMode_K(string &message, Client &client) {
   }
 }
 
-void Event::_manageMode_O(std::string &message, Client &client) {
+void Event::_manageMode_O(string &message, Client &client) {
   string channelName, mode, targetNick;
   modeParamParsing(message, channelName, mode, targetNick);
 
@@ -256,23 +246,19 @@ void Event::_manageMode_O(std::string &message, Client &client) {
     return sendRC(ERR_NOSUCHNICK(client.getNickname(), targetNick), client.getSocket());
 
   if (channel->findClient(targetClient->getSocket()) == false)
-    return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), targetNick, channelName),
-                  client.getSocket());
+    return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), targetNick, channelName), client.getSocket());
   if (mode[0] == '+') {
     if (channel->clientIsOperator(*targetClient))
       return sendRC(ERR_USERONCHANNEL(client.getNickname(), targetNick), client.getSocket());
-    channel->addOperator(*targetClient);
-    string modeMsg =
-        ":" + client.getNickname() + " MODE " + channelName + " +o " + targetNick + "\r\n";
+    channel->addOperator(targetClient);
+    string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " +o " + targetNick + "\r\n";
     channel->sendAllClient(modeMsg);
 
   } else if (mode[0] == '-') {
     if (channel->clientIsOperator(*targetClient) == false)
-      return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), targetNick, channelName),
-                    client.getSocket());
+      return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), targetNick, channelName), client.getSocket());
     channel->removeOperator(*targetClient);
-    string modeMsg =
-        ":" + client.getNickname() + " MODE " + channelName + " -o " + targetNick + "\r\n";
+    string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " -o " + targetNick + "\r\n";
     channel->sendAllClient(modeMsg);
   }
 }
@@ -315,7 +301,7 @@ void Event::_manageMode_L(string &message, Client &client) {
     channel->removeUserLimit();
   }
 
-  string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " " + mode +
-                   (param.empty() ? "" : " " + param) + "\r\n";
+  string modeMsg =
+      ":" + client.getNickname() + " MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
   channel->sendAllClient(modeMsg);
 }

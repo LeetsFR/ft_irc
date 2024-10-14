@@ -55,10 +55,10 @@ void Channel::setUserLimit(int value) {
 
 void Channel::removeUserLimit() { _limitClientMode = false; }
 
-void Channel::addOperator(Client &client) {
+void Channel::addOperator(Client *client) {
   map<Client, bool>::iterator it;
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
-    if (it->first.getUniqId() == client.getUniqId())
+    if (it->first.getUniqId() == client->getUniqId())
       it->second = true;
   }
 }
@@ -68,6 +68,8 @@ void Channel::removeOperator(Client &client) {
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
     if (it->first.getUniqId() == client.getUniqId())
       it->second = false;
+    cout << "On lui retire bien" << endl;
+    return;
   }
 }
 

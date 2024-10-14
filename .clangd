@@ -1,3 +1,4 @@
 CompileFlags:
-  Add: [-I/home/maxime/42/ft_irc/include]
-
+  Add: 
+  - -I/usr/include/clang/12/include
+  - -I/home/mcollas/42/ft_irc/include

@@ -21,7 +21,7 @@ public:
   void setPassword(string &, bool);
   void setUserLimit(int);
   void removeUserLimit();
-  void addOperator(Client &);
+  void addOperator(Client *);
   void removeOperator(Client &);
   void addInvitedClient(const string &);
   void modifyTopic(const string &topic);
