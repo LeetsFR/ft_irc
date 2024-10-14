@@ -5,7 +5,6 @@
 
 Channel::Channel(const string &name, const string &password, Client &client) : _name(name), _password(password) {
   _listClient.insert(make_pair(client, true));
-  sendRC(RPL_NOTOPIC(client.getNickname(), _name), client.getSocket());
   _topic = "";
   if (password.empty())
     _passwordON = false;
@@ -58,7 +57,7 @@ void Channel::removeUserLimit() { _limitClientMode = false; }
 void Channel::addOperator(Client *client) {
   map<Client, bool>::iterator it;
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
-    if (it->first.getUniqId() == client->getUniqId())
+    if (it->first.getNickname() == client->getNickname())
       it->second = true;
   }
 }
@@ -66,10 +65,8 @@ void Channel::addOperator(Client *client) {
 void Channel::removeOperator(Client &client) {
   map<Client, bool>::iterator it;
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
-    if (it->first.getUniqId() == client.getUniqId())
+    if (it->first.getNickname() == client.getNickname())
       it->second = false;
-    cout << "On lui retire bien" << endl;
-    return;
   }
 }
 
@@ -117,11 +114,8 @@ void Channel::joinChannel(const string &password, Client &client) {
   string joinMsg = ":" + client.getNickname() + "@server" + " JOIN :" + _name + "\r\n";
   sendRC(joinMsg, client.getSocket());
 
-  if (_topic.empty()) {
-    sendRC(RPL_NOTOPIC(client.getNickname(), _name), client.getSocket());
-  } else {
+  if (_topic.empty() == false)
     sendRC(RPL_TOPIC(client.getNickname(), _name, _topic), client.getSocket());
-  }
   sendRC(RPL_NAMREPLY(client.getNickname(), _name, getUserList()), client.getSocket());
   sendRC(RPL_ENDOFNAMES(client.getNickname(), _name), client.getSocket());
   sendAllOtherClient(joinMsg, client.getSocket());
@@ -131,7 +125,7 @@ void Channel::kickClient(Client *client) {
   map<Client, bool>::iterator it;
 
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
-    if (it->first.getUniqId() == client->getUniqId())
+    if (it->first.getNickname() == client->getNickname())
       _listClient.erase(it);
     return;
   }
@@ -158,7 +152,7 @@ bool Channel::findClient(const int fd) const {
 bool Channel::findClient(Client *client) const {
   map<Client, bool>::const_iterator it;
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
-    if (it->first.getSocket() == client->getSocket() && it->first.getUniqId() == client->getUniqId())
+    if (it->first.getSocket() == client->getSocket() && it->first.getNickname() == client->getNickname())
       return true;
   }
   return false;

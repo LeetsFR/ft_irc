@@ -116,7 +116,7 @@ void Event::_manageTOPIC(string &message, Client &client) {
   if (isTopicIsChanged == true) {
     if (channel->getTopicOnlyOperator() == true) {
       if (channel->clientIsOperator(client) == false)
-        return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channel->getName()), client.getSocket());
+        return sendRC(ERR_CHANOPRIVSNEEDED(client.getNickname(), channel->getName()), client.getSocket());
     }
     channel->modifyTopic(topic);
     string topicMsg = ":" + client.getNickname() + " TOPIC " + channelName + " :" + topic + "\r\n";
@@ -136,8 +136,6 @@ void Event::_manageJOIN(string &message, Client &client) {
   string channelName;
   string password;
   joinParsing(message, channelName, password);
-  cout << "ChannelName: " << "--" << channelName << "--" << endl;
-  cout << "Password: " << "--" << password << "--" << endl;
   Channel *channelPtr = _serv.findChannel(channelName);
   if (channelPtr == NULL)
     _serv.createChannel(channelName, password, client);
@@ -239,8 +237,7 @@ void Event::_manageMode_O(string &message, Client &client) {
     return sendRC(ERR_NOTONCHANNEL(client.getHostname(), channelName), client.getSocket());
 
   if (channel->clientIsOperator(client) == false)
-    return sendRC(ERR_CHANOPRIVSNEEDED(client.getHostname(), channelName), client.getSocket());
-
+    return sendRC(ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName), client.getSocket());
   Client *targetClient = _serv.findClient(targetNick);
   if (targetClient == NULL)
     return sendRC(ERR_NOSUCHNICK(client.getNickname(), targetNick), client.getSocket());
@@ -268,40 +265,23 @@ void Event::_manageMode_L(string &message, Client &client) {
   modeParamParsing(message, channelName, mode, param);
 
   Channel *channel = _serv.findChannel(channelName);
-  if (channel == NULL) {
-    string msg = ERR_NOSUCHCHANNEL(client.getNickname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->findClient(client.getSocket()) == false) {
-    string msg = ERR_NOTONCHANNEL(client.getNickname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
-  if (channel->clientIsOperator(client) == false) {
-    string msg = ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName);
-    sendRC(msg, client.getSocket());
-    return;
-  }
-
+  if (channel == NULL)
+    return sendRC(ERR_NOSUCHCHANNEL(client.getNickname(), channelName), client.getSocket());
+  if (channel->findClient(client.getSocket()) == false)
+    return sendRC(ERR_NOTONCHANNEL(client.getNickname(), channelName), client.getSocket());
+  if (channel->clientIsOperator(client) == false)
+    return sendRC(ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName), client.getSocket());
   if (mode[0] == '+') {
-    if (param.empty()) {
-      string msg = ERR_NEEDMOREPARAMS(client.getNickname(), "MODE");
-      sendRC(msg, client.getSocket());
-      return;
-    }
+    if (param.empty())
+      return sendRC(ERR_NEEDMOREPARAMS(client.getNickname(), "MODE"), client.getSocket());
     int limit = convertIntSafe(param.c_str());
-    // if (limit <= 0) {
-    //   string msg = ERR_INVALIDLIMIT(client.getNickname(), channelName);
-    //   sendRC(msg, client.getSocket());
-    //   return;
-    // }
+    // if (limit <= 0) 
+    //   return sendRC(ERR_INVALIDLIMIT(client.getNickname(), channelName), client.getSocket());
     channel->setUserLimit(limit);
   } else if (mode[0] == '-') {
     channel->removeUserLimit();
   }
 
-  string modeMsg =
-      ":" + client.getNickname() + " MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
+  string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
   channel->sendAllClient(modeMsg);
 }
