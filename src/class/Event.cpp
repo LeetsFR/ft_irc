@@ -275,13 +275,14 @@ void Event::_manageMode_L(string &message, Client &client) {
     if (param.empty())
       return sendRC(ERR_NEEDMOREPARAMS(client.getNickname(), "MODE"), client.getSocket());
     int limit = convertIntSafe(param.c_str());
-    // if (limit <= 0) 
-    //   return sendRC(ERR_INVALIDLIMIT(client.getNickname(), channelName), client.getSocket());
+    if (limit <= 0) 
+      return sendRC(ERR_INVALIDLIMIT(client.getNickname(), channelName), client.getSocket());
     channel->setUserLimit(limit);
   } else if (mode[0] == '-') {
     channel->removeUserLimit();
   }
-
-  string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
+  string modeMsg = ":" + client.getNickname() + "!" + client.getUser() + "@" + client.getHostname() +
+                 " MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
+  // string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
   channel->sendAllClient(modeMsg);
 }

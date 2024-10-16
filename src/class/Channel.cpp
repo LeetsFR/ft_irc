@@ -11,7 +11,7 @@ Channel::Channel(const string &name, const string &password, Client &client) : _
   else
     _passwordON = true;
   _limitClient = 0;
-  _actualNbrClient = 0;
+  _actualNbrClient = 1;
   _limitClientMode = false;
   _inviteOnly = false;
   _topicOnlyOperator = false;
@@ -114,9 +114,8 @@ void Channel::joinChannel(const string &password, Client &client) {
   if (_limitClientMode) {
     if (_actualNbrClient >= _limitClient)
       return sendRC(ERR_CHANNELISFULL(client.getNickname(), _name), client.getSocket());
-    ++_actualNbrClient;
   }
-
+    ++_actualNbrClient;
   _listClient.insert(make_pair(client, false));
 
   string joinMsg = ":" + client.getNickname() + "@server" + " JOIN :" + _name + "\r\n";
@@ -135,6 +134,8 @@ void Channel::kickClient(Client *client) {
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
     if (it->first.getNickname() == client->getNickname()) {
       _listClient.erase(it);
+      if(_limitClientMode)
+        _actualNbrClient--;
       return;
     }
   }
