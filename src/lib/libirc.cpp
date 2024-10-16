@@ -3,7 +3,7 @@
 #include <string>
 
 bool portIsValid(int port) {
-  if (port == 6667)
+  if (port == 194 || (port >= 6665 && port <= 6669) || port == 6697)
     return true;
   return false;
 }
