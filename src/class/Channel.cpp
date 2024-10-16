@@ -78,7 +78,16 @@ void Channel::removeOperator(Client &client) {
   }
 }
 
-void Channel::addInvitedClient(const string &invitedClientName) { _invitedClient.push_back(invitedClientName); }
+void Channel::addInvitedClient(const string &invitedClientName) { 
+  
+  vector<string>::iterator it;
+  for(it = _invitedClient.begin(); it != _invitedClient.end(); ++it)
+  {
+    if(*it == invitedClientName)
+      return;
+  }
+  _invitedClient.push_back(invitedClientName); }
+
 
 const string Channel::getUserList() const {
   string userlist;
@@ -93,11 +102,13 @@ const string Channel::getUserList() const {
   return userlist;
 }
 
-bool Channel::isInvitedClient(const string &name) const {
-  vector<string>::const_iterator it;
+bool Channel::isInvitedClient(const string &name) {
+  vector<string>::iterator it;
   for (it = _invitedClient.begin(); it != _invitedClient.end(); ++it) {
-    if (*it == name)
+    if (*it == name) {
+      _invitedClient.erase(it);
       return true;
+    }
   }
   return false;
 }
@@ -115,7 +126,7 @@ void Channel::joinChannel(const string &password, Client &client) {
     if (_actualNbrClient >= _limitClient)
       return sendRC(ERR_CHANNELISFULL(client.getNickname(), _name), client.getSocket());
   }
-    ++_actualNbrClient;
+  ++_actualNbrClient;
   _listClient.insert(make_pair(client, false));
 
   string joinMsg = ":" + client.getNickname() + "@server" + " JOIN :" + _name + "\r\n";
@@ -134,7 +145,7 @@ void Channel::kickClient(Client *client) {
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
     if (it->first.getNickname() == client->getNickname()) {
       _listClient.erase(it);
-      if(_limitClientMode)
+      if (_limitClientMode)
         _actualNbrClient--;
       return;
     }

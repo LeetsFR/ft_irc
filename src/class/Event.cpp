@@ -96,7 +96,7 @@ void Event::_manageKICK(string &message, Client &client) {
     return sendRC(ERR_USERNOTINCHANNEL(client.getNickname(), kickUser->getNickname(), channel->getName()),
                   client.getSocket());
 
-  std::string kickMsg = ":server KICK " + channelName + " " + kickUserName + " :" + reason + "\r\n";
+  string kickMsg = ":"+ client.getNickname() + "@server KICK " + channelName + " " + kickUserName + " :" + reason + "\r\n";
   channel->sendAllClient(kickMsg);
   channel->kickClient(kickUser);
 }
@@ -119,7 +119,7 @@ void Event::_manageTOPIC(string &message, Client &client) {
         return sendRC(ERR_CHANOPRIVSNEEDED(client.getNickname(), channel->getName()), client.getSocket());
     }
     channel->modifyTopic(topic);
-    string topicMsg = ":" + client.getNickname() + " TOPIC " + channelName + " :" + topic + "\r\n";
+    string topicMsg = ":" + client.getNickname() + "@server TOPIC " + channelName + " :" + topic + "\r\n";
     return channel->sendAllClient(topicMsg);
   } else {
     if (channel->getTopic().empty())
@@ -164,13 +164,11 @@ void Event::_manageINVITE(string &message, Client &client) {
   if (channel->getInviteOnly()) {
     if (channel->clientIsOperator(client) == false)
       return sendRC(ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName), client.getSocket());
-    channel->addInvitedClient(invitedClient->getNickname());
   }
-
+  channel->addInvitedClient(invitedClient->getNickname());
   sendRC(RPL_INVITING(client.getNickname(), invitedClient->getNickname(), channelName), client.getSocket());
 
-  string inviteMsg =
-      ":" + client.getNickname() + " INVITE " + invitedClient->getNickname() + " :" + channelName + "\r\n";
+  string inviteMsg = ":" + client.getNickname() + "@server INVITE " + invitedClient->getNickname() + " :" + channelName + "\r\n";
   sendRC(inviteMsg, invitedClient->getSocket());
 }
 
@@ -281,8 +279,8 @@ void Event::_manageMode_L(string &message, Client &client) {
   } else if (mode[0] == '-') {
     channel->removeUserLimit();
   }
-  string modeMsg = ":" + client.getNickname() + "!" + client.getUser() + "@" + client.getHostname() +
-                 " MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
-  // string modeMsg = ":" + client.getNickname() + " MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
+  // string modeMsg = ":" + client.getNickname() + "!" + client.getUser() + "@" + client.getHostname() +
+  //                " MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
+  string modeMsg = ":" + client.getNickname() + "@server MODE " + channelName + " " + mode + (param.empty() ? "" : " " + param) + "\r\n";
   channel->sendAllClient(modeMsg);
 }
