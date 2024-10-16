@@ -52,7 +52,7 @@ void Channel::setTopicOnlyOperator(bool value) { _topicOnlyOperator = value; }
 
 void Channel::setPassword(string &password, bool passwordON) {
   _passwordON = passwordON;
-  password = _password;
+  _password = password;
 }
 
 void Channel::setUserLimit(int value) {
