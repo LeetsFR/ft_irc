@@ -6,7 +6,7 @@
 /*   By: scely <scely@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/30 19:49:17 by scely             #+#    #+#             */
-/*   Updated: 2024/10/16 17:54:41 by scely            ###   ########.fr       */
+/*   Updated: 2024/10/17 12:26:25 by scely            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -309,7 +309,7 @@ typeMsg Client::parsJoin(string &message) {
   std::vector<std::string> joinParam = ft_split(message, " ");
   std::string errorMsg;
 
-  if (joinParam.size() < 2 || joinParam[1][0] != '#') {
+  if (joinParam.size() != 2 || joinParam.size() < 2 || joinParam[1][0] != '#') {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "JOIN"));
     return (ERROR);
   }
