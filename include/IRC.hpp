@@ -30,6 +30,7 @@ public:
   void joinChannel(Channel *channel, const string &password, Client &);
   void removeClient(int fd);
 
+
 private:
   string _name;
   int _serverSocket;
@@ -48,6 +49,7 @@ private:
   void _waitEvent();
   void _addNewClient();
   void _getEventClient(int fd);
+  void _removeClientChannel(int fd);
 };
 
 extern bool run;

@@ -62,6 +62,16 @@ void Channel::setUserLimit(int value) {
 
 void Channel::removeUserLimit() { _limitClientMode = false; }
 
+void Channel::eraseClient(int fd) {
+  map<Client, bool>::iterator it;
+  for (it = _listClient.begin(); it != _listClient.end(); ++it) {
+    if (it->first.getSocket() == fd) {
+      _listClient.erase(it);
+      return;
+    }
+  }
+}
+
 void Channel::addOperator(Client *client) {
   map<Client, bool>::iterator it;
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
@@ -78,16 +88,15 @@ void Channel::removeOperator(Client &client) {
   }
 }
 
-void Channel::addInvitedClient(const string &invitedClientName) { 
-  
+void Channel::addInvitedClient(const string &invitedClientName) {
+
   vector<string>::iterator it;
-  for(it = _invitedClient.begin(); it != _invitedClient.end(); ++it)
-  {
-    if(*it == invitedClientName)
+  for (it = _invitedClient.begin(); it != _invitedClient.end(); ++it) {
+    if (*it == invitedClientName)
       return;
   }
-  _invitedClient.push_back(invitedClientName); }
-
+  _invitedClient.push_back(invitedClientName);
+}
 
 const string Channel::getUserList() const {
   string userlist;

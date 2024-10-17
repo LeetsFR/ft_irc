@@ -75,7 +75,6 @@ bool IRC::doesChannelExist(const string &channel) {
   vector<Channel>::iterator it;
 
   for (it = _listChannel.begin(); it != _listChannel.end(); ++it) {
-    // cout << "GetName " + it->getName() << " channel " << channel << endl;
     if (it->getName() == channel)
       return true;
   }
@@ -114,11 +113,21 @@ Channel *IRC::findChannel(const string &channelName) {
 
 void IRC::createChannel(const string &name, const string &password, Client &client) { _listChannel.push_back(Channel(name, password, client)); }
 
+void IRC::_removeClientChannel(int fd) {
+  vector<Channel>::iterator it;
+
+  for (it = _listChannel.begin(); it != _listChannel.end(); ++it) {
+    it->eraseClient(fd);
+    return;
+  }
+}
+
 void IRC::removeClient(int fd) {
   epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, &_event);
   vector<Client>::iterator it;
   for (it = _listClient.begin(); it != _listClient.end(); ++it) {
     if (it->getSocket() == fd) {
+      _removeClientChannel(fd);
       _listClient.erase(it);
       cout << printTime() << "(IP: " << it->getIp() << " - PORT: " << it->getPort() << ") Client disconnected" << endl;
       close(fd);

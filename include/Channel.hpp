@@ -20,6 +20,7 @@ public:
   void setTopicOnlyOperator(bool);
   void setPassword(string &, bool);
   void setUserLimit(int);
+  void eraseClient(int);
   void removeUserLimit();
   void addOperator(Client *);
   void removeOperator(Client &);
