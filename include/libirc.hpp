@@ -85,6 +85,7 @@ void handleSigint(int);
 bool getMessage(int fd, string &message);
 bool portIsValid(int port);
 int convertIntSafe(const string &n);
+int getLimitSafe(const string &n);
 string printTime();
 vector<string> ft_split(const string &, const string &);
 bool kickParsing(const string &message, string &, string &, string &);

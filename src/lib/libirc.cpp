@@ -144,6 +144,16 @@ int convertIntSafe(const string &n) {
   return safe;
 }
 
+int getLimitSafe(const string &n) {
+  char *endPtr;
+  long safe = strtol(n.c_str(), &endPtr, 10);
+  if (*endPtr != '\0' && *endPtr != '\n')
+    return -1;
+  if (errno == ERANGE)
+    return -1;
+  return safe;
+}
+
 bool modeParamParsing(string &message, string &channelName, string &mode, string &param) {
   int endType = message.find(' ');
   int endChannel = message.find(' ', endType + 1);

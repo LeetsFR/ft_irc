@@ -43,7 +43,7 @@ Event::Event(string &message, Client &client, typeMsg type, IRC &serv) : _serv(s
     _manageMode_O(message, client);
     break;
   case MODE_L:
-    _manageMode_L(message, client);
+    ;_manageMode_L(message, client);
     break;
   default:
     break;
@@ -281,7 +281,7 @@ void Event::_manageMode_L(string &message, Client &client) {
   if (mode[0] == '+') {
     if (param.empty())
       return sendRC(ERR_NEEDMOREPARAMS(client.getNickname(), "MODE L"), client.getSocket());
-    int limit = convertIntSafe(param.c_str());
+    int limit = getLimitSafe(param.c_str());
     if (limit <= 0)
       return sendRC(ERR_INVALIDLIMIT(client.getNickname(), channelName), client.getSocket());
     channel->setUserLimit(limit);
