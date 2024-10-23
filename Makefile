@@ -12,12 +12,13 @@ OBJ_DIR      := obj
 
 CLASS_DIR    := $(SRC_DIR)/class
 LIB_DIR      := $(SRC_DIR)/lib
-SRCS         := $(SRC_DIR)/main.cpp $(CLASS_DIR)/IRC.cpp $(CLASS_DIR)/Client.cpp $(CLASS_DIR)/Channel.cpp $(CLASS_DIR)/Event.cpp $(LIB_DIR)/libirc.cpp 
+SRCS         := $(SRC_DIR)/main.cpp $(CLASS_DIR)/IRC.cpp $(CLASS_DIR)/Client.cpp $(CLASS_DIR)/Channel.cpp $(CLASS_DIR)/Event.cpp $(LIB_DIR)/libirc.cpp\
+				$(CLASS_DIR)/Bot.cpp
 
 INCLUDE      := include
 OBJS         := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-CFLAGS       := -Wall -Wextra -Werror -std=c++98
+CFLAGS       := -Wall -Wextra -Werror -std=c++98 -g3
 CCFLAGS      := -I $(INCLUDE)
 CC           = g++
 

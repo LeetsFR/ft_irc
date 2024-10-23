@@ -6,12 +6,13 @@
 /*   By: scely <scely@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/30 19:49:17 by scely             #+#    #+#             */
-/*   Updated: 2024/10/17 12:26:25 by scely            ###   ########.fr       */
+/*   Updated: 2024/10/23 17:51:54 by scely            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 #include "IRC.hpp"
+#include "Bot.hpp"
 
 /**************************************************************************************/
 /*                              Constructeur et destructeur                           */
@@ -62,6 +63,9 @@ const string &Client::getUser() const { return (this->_username); }
 
 bool Client::handleMessage(std::string message, IRC &server) {
 
+  Bot test;
+  test.controlStr(message);
+  cout << message << std::endl;
   if (this->_prevMsgIncomplete == true && this->_messageTmp.size())
     message.insert(0, this->_messageTmp[0]);
   this->_messageTmp = ft_split(message, "\r\n");
@@ -153,7 +157,6 @@ void Client::configMessage(std::string &message, IRC &server) {
       tmp.erase(tmp.rfind(' '));
     for (size_t n = tmp.find(' '); n != std::string::npos; n = tmp.find(' ', n + 1))
       tmp.replace(n, 1,  ".");
-    cout << "{tmp} " + tmp << std::endl;
     this->_username = tmp;
   }
 
@@ -168,7 +171,6 @@ void Client::configMessage(std::string &message, IRC &server) {
 void Client::sendMsgToClient(const std::string &message) {
   if (send(this->_socket, message.c_str(), message.size(), 0) == -1)
     cerr << RED "Error: fail to send message" RESET << endl;
-  cout << message;
 }
 
 typeMsg Client::parsPrivmsg(string &message, IRC &server) {
@@ -268,7 +270,7 @@ typeMsg Client::parsKick(std::string &message, IRC &server) {
 
 typeMsg Client::parsMode(string &message, IRC &server) {
 
-  if (message == ("MODE " + this->_nickname + " +i"))
+  if (message == ("MODE " + this->_nickname + " +i") )
     return (IGNORE);
   std::vector<std::string> modeParam = ft_split(message, " ");
   std::string modeToken;
@@ -309,7 +311,7 @@ typeMsg Client::parsJoin(string &message) {
   std::vector<std::string> joinParam = ft_split(message, " ");
   std::string errorMsg;
 
-  if (joinParam.size() != 2 || joinParam.size() < 2 || joinParam[1][0] != '#') {
+  if (joinParam.size() < 2 || joinParam[1][0] != '#') {
     sendMsgToClient(ERR_NEEDMOREPARAMS(this->_nickname, "JOIN"));
     return (ERROR);
   }

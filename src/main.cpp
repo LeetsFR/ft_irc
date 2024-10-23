@@ -4,7 +4,8 @@
 int main(int ac, char *av[]) {
   if (ac == 3)
   {
-    try {
+    try 
+    { 
       IRC server(av[1], av[2]);
     } catch (logic_error &le) {
       cout << printTime() << RED << le.what() << RESET << endl;
